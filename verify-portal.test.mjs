@@ -7,6 +7,7 @@ const require = createRequire(import.meta.url);
 const ordinaryProxy = require('./netlify/functions/openai-proxy.js');
 const kvProxy = require('./Password + KV Sync - Activate Later/netlify/functions/openai-proxy.js');
 const modelConfig = require('./netlify/functions/openai-model-config.js');
+const releaseFiles = require('./scripts/release-files.cjs');
 
 process.env.OPENAI_API_KEY = 'test-only-api-key';
 
@@ -287,4 +288,15 @@ test('the distribution pack is standalone rather than an existing-user change bu
     assert.doesNotMatch(readme, /v1\.1/i);
     assert.doesNotMatch(readme, /what (?:version )?1\.1 changes/i);
   }
+});
+
+test('every local manifest file reference exists and is included in the release package', () => {
+  assert.doesNotThrow(() => releaseFiles.assertManifestAssetsIncluded());
+  const assets = releaseFiles.manifestAssetPaths().map(({ assetPath }) => assetPath);
+  assert.deepEqual(assets, [
+    'index.html',
+    'pwa-icon.png',
+    'Password + KV Sync - Activate Later/index.html',
+    'Password + KV Sync - Activate Later/pwa-icon.png'
+  ]);
 });
