@@ -1,0 +1,30 @@
+name: Preserve GitHub metrics
+
+on: workflow_dispatch
+
+permissions:
+  contents: write
+
+concurrency:
+  group: preserve-github-metrics
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PORTAL_TRAFFIC_TOKEN: ${{ secrets.PORTAL_TRAFFIC_TOKEN }}
+      METRICS_COMMIT_TOKEN: ${{ github.token }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require the traffic token
+        shell: bash
+        run: |
+          if [[ -z "$PORTAL_TRAFFIC_TOKEN" ]]; then
+            echo "Add PORTAL_TRAFFIC_TOKEN before running this workflow."
+            exit 1
+          fi
+      - name: Preserve the aggregate snapshot
+        run: node scripts/capture-github-metrics.mjs --commit

@@ -1,0 +1,18 @@
+PASSWORD + KV SYNC: INCLUDED FOR LATER
+
+Your threaded Portal works immediately without Password or KV Sync.
+
+At first, conversations are stored locally in IndexedDB on the browser and device you use. Keep regular thread exports because clearing browser data, removing the PWA or browser corruption can remove an IndexedDB-only history.
+
+When you are ready, open `Password + KV Sync - Activate Later/START HERE - ACTIVATE PASSWORD AND KV.txt` and follow the included Cloudflare guide in order.
+
+Why both parts matter:
+
+- Password protection controls access to the Portal and protects the paid model proxy from unauthorised use.
+- Cloudflare KV gives the Portal durable cross-device thread storage and protects against relying on one browser database alone.
+
+The activation folder is already matched to this exact threaded starter. Activate it on the SAME Netlify site so the browser can retain the existing local IndexedDB threads. Export important threads before any upgrade.
+
+Never put API keys, passwords, password hashes or sync tokens inside index.html, a guide file or any other public Portal file. Add secrets only through the Netlify and Cloudflare environment/secret controls described in the guide. Keep OPENAI_MODEL in the Netlify environment too so activating Password + KV does not change the selected companion model.
+
+Uploading this complete starter folder to Netlify is safe. The nested activation files remain ordinary inactive static files until you deliberately deploy the activation folder over the same site and complete its environment setup.

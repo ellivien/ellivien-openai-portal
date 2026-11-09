@@ -1,0 +1,2810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#10b981">
+<title>[YOUR COMPANION NAME] Portal</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./pwa-icon.png">
+<link rel="icon" href="./pwa-icon.png">
+
+
+<!--
+╔═══════════════════════════════════════════════════════════════════╗
+║                    ELLIVIEN COMPANION PORTAL                      ║
+║                  Custom AI Companion Interface                    ║
+║                      https://ellivien.blogspot.com                ║
+╚═══════════════════════════════════════════════════════════════════╝
+-->
+
+<style>
+:root {
+  --app-vh: 1vh;
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --secondary: #8b5cf6;
+  --bg-main: #f5f5f7;
+  --bg-chat: #ffffff;
+  --bg-user: #ffffff;
+  --bg-assistant: #e9d5ff;
+  --text-main: #1f2937;
+  --text-dim: #6b7280;
+  --border: #e5e7eb;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  height: 100vh;
+  height: 100dvh;
+  height: calc(var(--app-vh, 1vh) * 100);
+  min-height: 100dvh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  display: flex;
+  height: 100vh;
+  height: 100dvh;
+  height: calc(var(--app-vh, 1vh) * 100);
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+#sidebar {
+  width: 280px;
+  background: var(--bg-chat);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  height: 100dvh;
+  height: calc(var(--app-vh, 1vh) * 100);
+  min-height: 100dvh;
+  z-index: 1000;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#sidebar.open {
+  transform: translateX(0);
+}
+
+#sidebar-header {
+  padding: 20px;
+  padding-top: calc(20px + env(safe-area-inset-top));
+  padding-left: calc(20px + env(safe-area-inset-left));
+  padding-right: calc(20px + env(safe-area-inset-right));
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#sidebar-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+#thread-section {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sidebar-action-btn {
+  width: 100%;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 14px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sidebar-action-btn:hover {
+  background: var(--primary-hover);
+}
+
+.sidebar-action-btn.secondary {
+  background: var(--bg-assistant);
+  color: var(--text-main);
+}
+
+.sidebar-action-btn.secondary:hover {
+  background: var(--secondary);
+  color: white;
+}
+
+#thread-search {
+  width: 100%;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-main);
+  font: inherit;
+  font-size: 14px;
+  padding: 11px 12px;
+  margin-bottom: 14px;
+}
+
+#thread-search:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+#thread-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.thread-item {
+  width: 100%;
+  text-align: left;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 12px;
+  transition: border-color 0.2s, background 0.2s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.thread-item:hover,
+.thread-item.active {
+  border-color: var(--primary);
+  background: var(--bg-user);
+}
+
+.thread-item.pinned {
+  border-color: var(--secondary);
+}
+
+.thread-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 5px;
+}
+
+.thread-meta,
+.thread-preview,
+.empty-thread-list {
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.thread-preview {
+  margin-top: 6px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.empty-thread-list {
+  padding: 12px;
+  text-align: center;
+}
+
+.thread-action-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: var(--text-main);
+  word-break: break-word;
+}
+
+.thread-action-btn {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-main);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.thread-action-btn:hover {
+  border-color: var(--primary);
+}
+
+.thread-action-btn.danger {
+  color: #dc2626;
+}
+
+.search-highlight {
+  background: #ffd700;
+  color: #000;
+  padding: 1px 3px;
+  border-radius: 3px;
+}
+
+#search-modal .modal {
+  max-width: 560px;
+  max-height: min(82vh, 720px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.search-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.search-modal-header h3 {
+  margin: 0;
+}
+
+.search-close-btn {
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-main);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.search-result-thread {
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 14px 0;
+  overflow: hidden;
+}
+
+.search-result-thread-title {
+  background: var(--bg-chat);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-main);
+  cursor: pointer;
+  font-weight: 800;
+  padding: 12px 14px;
+}
+
+.search-result-item {
+  background: var(--bg-chat);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 10px;
+  padding: 12px;
+}
+
+.search-result-item:hover,
+.search-result-thread-title:hover {
+  border-color: var(--primary);
+}
+
+.search-result-role {
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.search-result-snippet {
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+#sidebar-footer {
+  padding: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.context-window-setting {
+  margin: 18px 20px 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.context-window-control {
+  width: 100%;
+  background: var(--bg-main);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+}
+
+/* Main chat area */
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+#header {
+  position: relative;
+  z-index: 20;
+  background: var(--bg-chat);
+  padding: 15px 20px;
+  padding-top: calc(15px + env(safe-area-inset-top));
+  padding-left: calc(20px + env(safe-area-inset-left));
+  padding-right: calc(20px + env(safe-area-inset-right));
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#hamburger {
+  position: relative;
+  z-index: 22;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+#title {
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+#header-controls {
+  position: relative;
+  z-index: 21;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  position: relative;
+  z-index: 22;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: all 0.2s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.icon-btn:hover {
+  border-color: var(--primary);
+}
+
+#messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.message {
+  padding: 12px 16px;
+  border-radius: 12px;
+  max-width: 85%;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+.message p {
+  margin: 0 0 0.8em;
+}
+
+.message p:last-child {
+  margin-bottom: 0;
+}
+
+.message.user {
+  background: var(--bg-user);
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.message.assistant {
+  background: var(--bg-assistant);
+  align-self: flex-start;
+  border: 1px solid var(--border);
+}
+
+#input-container {
+  background: var(--bg-chat);
+  border-top: 1px solid var(--border);
+  padding: 15px;
+  padding-bottom: calc(15px + env(safe-area-inset-bottom));
+  padding-left: calc(15px + env(safe-area-inset-left));
+  padding-right: calc(15px + env(safe-area-inset-right));
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+#input {
+  flex: 1;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--text-main);
+  font-size: 16px;
+  resize: none;
+  min-height: 44px;
+  max-height: 150px;
+  font-family: inherit;
+}
+
+#input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+#send-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#send-btn:hover {
+  background: var(--primary-hover);
+}
+
+#send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.typing-indicator {
+  display: none;
+  align-self: flex-start;
+  padding: 12px 16px;
+  background: var(--bg-assistant);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  max-width: 85px;
+}
+
+.typing-indicator.active {
+  display: block;
+}
+
+.typing-indicator span {
+  height: 8px;
+  width: 8px;
+  background: var(--text-dim);
+  border-radius: 50%;
+  display: inline-block;
+  margin: 0 2px;
+  animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 60%, 100% { opacity: 0.3; }
+  30% { opacity: 1; }
+}
+
+/* Theme picker modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal {
+  background: var(--bg-chat);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 320px;
+  width: 90%;
+}
+
+.modal h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+#storage-security-info-modal {
+  align-items: flex-start;
+  overflow-y: auto;
+  padding: max(16px, env(safe-area-inset-top)) 12px max(16px, env(safe-area-inset-bottom));
+}
+
+#storage-security-info-modal .modal {
+  box-sizing: border-box;
+  width: min(100%, 520px);
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+#storage-security-info-modal .modal h3 {
+  margin: 0 0 10px;
+}
+
+#storage-security-info-modal .modal p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+#storage-security-info-modal #security-sync-checklist {
+  margin: 12px 0 !important;
+}
+
+.theme-option {
+  padding: 12px;
+  margin: 8px 0;
+  background: var(--bg-main);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.theme-option:hover {
+  border-color: var(--primary);
+}
+
+.theme-option.selected {
+  border-color: var(--primary);
+  background: var(--bg-user);
+}
+
+.theme-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  display: flex;
+  gap: 2px;
+}
+
+.theme-preview span {
+  flex: 1;
+  border-radius: 2px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+  #sidebar {
+    width: min(85%, 320px);
+  }
+  
+  #messages {
+    padding: 15px;
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+  
+  #input-container {
+    padding: 10px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    padding-left: calc(10px + env(safe-area-inset-left));
+    padding-right: calc(10px + env(safe-area-inset-right));
+  }
+
+  #header {
+    padding-top: calc(12px + env(safe-area-inset-top));
+    padding-left: calc(16px + env(safe-area-inset-left));
+    padding-right: calc(16px + env(safe-area-inset-right));
+  }
+}
+</style>
+<style data-ellivien-accessibility>
+@font-face {
+  font-family: "OpenDyslexic";
+  src: url("./assets/accessibility/fonts/OpenDyslexic-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "OpenDyslexic";
+  src: url("./assets/accessibility/fonts/OpenDyslexic-Bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "OpenDyslexic";
+  src: url("./assets/accessibility/fonts/OpenDyslexic-Italic.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "OpenDyslexic";
+  src: url("./assets/accessibility/fonts/OpenDyslexic-Bold-Italic.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+}
+
+html[data-reading-font="opendyslexic"] body,
+html[data-reading-font="opendyslexic"] button,
+html[data-reading-font="opendyslexic"] input,
+html[data-reading-font="opendyslexic"] textarea,
+html[data-reading-font="opendyslexic"] select {
+  font-family: "OpenDyslexic", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+.accessibility-setting {
+  margin: 18px 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.accessibility-setting h4 {
+  margin: 0 0 12px;
+  color: var(--text-main);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.accessibility-field {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.accessibility-field-label {
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.accessibility-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-main);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 13px;
+}
+
+.accessibility-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+}
+
+.accessibility-toggle-row input {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  accent-color: var(--primary);
+}
+
+.accessibility-note {
+  margin-top: 10px;
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+
+/* Compact settings panels */
+#sidebar > .context-window-setting,
+#sidebar > .accessibility-setting,
+#upgrade-section > .context-window-setting,
+#upgrade-section > .accessibility-setting,
+#upgrade-section > .conversation-tools,
+.sidebar-settings > .reasoning-setting,
+.sidebar-settings > .verbosity-setting,
+.sidebar-settings > .prompt-cache-setting {
+  border: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-main);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+#sidebar > .context-window-setting,
+#sidebar > .accessibility-setting {
+  margin: 12px 16px;
+  padding: 15px;
+}
+
+#upgrade-section > .context-window-setting,
+#upgrade-section > .accessibility-setting,
+#upgrade-section > .conversation-tools {
+  margin: 16px 0 0;
+  padding: 15px;
+}
+
+#sidebar > .context-window-setting,
+#upgrade-section > .context-window-setting {
+  border-left: 4px solid var(--primary);
+}
+
+#sidebar > .accessibility-setting,
+#upgrade-section > .accessibility-setting {
+  border-left: 4px solid var(--secondary);
+}
+
+#upgrade-section > .conversation-tools {
+  border-left: 4px solid var(--primary);
+}
+
+.context-window-setting > p:first-child,
+.reasoning-setting > p:first-child,
+.verbosity-setting > p:first-child,
+.prompt-cache-setting > p:first-child,
+.accessibility-setting h4,
+.conversation-tools > p:first-child {
+  margin-bottom: 10px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.context-window-control,
+.accessibility-select {
+  min-height: 44px;
+  border-color: var(--border);
+  background: var(--bg-chat);
+}
+
+.accessibility-field {
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.accessibility-toggle-row {
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-chat);
+}
+
+.accessibility-toggle-row input {
+  width: 22px;
+  height: 22px;
+}
+
+.accessibility-note {
+  margin: 11px 1px 0;
+}
+
+.reasoning-effort-control,
+.verbosity-control {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-chat);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 13px;
+}
+
+.prompt-cache-link {
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.conversation-tools .conversation-tool-btn {
+  background: var(--bg-chat);
+}
+
+@media (max-width: 600px) {
+  #sidebar > .context-window-setting,
+  #sidebar > .accessibility-setting {
+    margin-right: 12px;
+    margin-left: 12px;
+    padding: 14px;
+  }
+}
+
+
+.sidebar-settings {
+  margin: 12px 16px 16px;
+  flex: 0 0 auto;
+}
+
+.sidebar-settings > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 46px;
+  padding: 10px 13px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--secondary);
+  border-radius: 8px;
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.sidebar-settings > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sidebar-settings-chevron {
+  color: var(--text-dim);
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-settings[open] .sidebar-settings-chevron {
+  transform: rotate(180deg);
+}
+
+.sidebar-settings > .context-window-setting,
+.sidebar-settings > .reasoning-setting,
+.sidebar-settings > .verbosity-setting,
+.sidebar-settings > .prompt-cache-setting,
+.sidebar-settings > .accessibility-setting {
+  margin: 10px 0 0;
+  padding: 14px;
+}
+
+.sidebar-settings > .context-window-setting {
+  border-left: 4px solid var(--primary);
+}
+
+.sidebar-settings > .reasoning-setting {
+  border-left: 4px solid var(--secondary);
+}
+
+.sidebar-settings > .verbosity-setting {
+  border-left: 4px solid var(--primary);
+}
+
+.sidebar-settings > .prompt-cache-setting {
+  border-left: 4px solid var(--primary);
+}
+
+.sidebar-settings > .accessibility-setting {
+  border-left: 4px solid var(--secondary);
+}
+
+@media (max-width: 600px) {
+  .sidebar-settings {
+    margin-right: 12px;
+    margin-left: 12px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <h3>Threads</h3>
+      <button id="sidebar-close" type="button" onclick="closeSidebar(event)" ontouchend="closeSidebar(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();closeSidebar(event)}">✕</button>
+    </div>
+    
+    <div id="thread-section">
+      <button class="sidebar-action-btn" type="button" onclick="createNewThread(event)" ontouchend="createNewThread(event)">New thread</button>
+      <button class="sidebar-action-btn secondary" type="button" onclick="showStorageSecurityInfo()">Storage &amp; security</button>
+      <input id="thread-search" type="search" placeholder="Search threads..." aria-label="Search threads">
+      <button class="sidebar-action-btn secondary" type="button" onclick="performFullSearch()">Search conversations</button>
+      <div id="thread-list" aria-label="Thread list"></div>
+    </div>
+
+    <details class="sidebar-settings">
+      <summary>
+        <span data-i18n="displayContext">Display &amp; context</span>
+        <span class="sidebar-settings-chevron" aria-hidden="true">⌄</span>
+      </summary>
+    <div class="reasoning-setting">
+      <p style="font-size:13px;color:var(--text-main);font-weight:600;margin-bottom:8px;line-height:1.5;">
+        Reasoning effort
+      </p>
+      <select class="reasoning-effort-control" id="reasoning-effort-select">
+        <option value="none">None: no reasoning</option>
+        <option value="low">Low: faster and lighter</option>
+        <option value="medium" selected>Medium: recommended for companion chat</option>
+        <option value="high">High: difficult tasks, higher cost</option>
+        <option value="xhigh">Extra high: hardest tasks, highest cost</option>
+        <option value="max">Maximum: exceptional tasks, highest cost</option>
+      </select>
+      <p style="font-size:12px;color:var(--text-dim);line-height:1.45;margin-top:8px;">
+        Medium is a balanced starting point. Compatible reasoning models may spend hidden reasoning tokens before replying. Unsupported settings are ignored safely by the server. Reasoning tokens can increase cost and response time.
+      </p>
+    </div>
+
+    <div class="verbosity-setting">
+      <p style="font-size:13px;color:var(--text-main);font-weight:600;margin-bottom:8px;line-height:1.5;">
+        Response verbosity
+      </p>
+      <select class="verbosity-control" id="verbosity-select">
+        <option value="low">Low: brief</option>
+        <option value="medium">Medium: balanced</option>
+        <option value="high" selected>High: fuller expression</option>
+      </select>
+      <p style="font-size:12px;color:var(--text-dim);line-height:1.45;margin-top:8px;">
+        High is recommended for companion conversation. Lower settings use fewer output tokens and can respond faster. Choose the level that fits your companion's natural voice.
+      </p>
+    </div>
+
+    <div class="prompt-cache-setting">
+      <p style="font-size:13px;color:var(--text-main);font-weight:600;margin-bottom:8px;line-height:1.5;">
+        Prompt caching check
+      </p>
+      <p style="font-size:12px;color:var(--text-dim);line-height:1.45;">
+        Aim for at least <strong style="color:var(--text-main);">1,024 tokens of stable companion prompt</strong> for a cache-eligible reusable prefix. Keep its beginning unchanged. Check it with the
+        <a class="prompt-cache-link" href="https://platform.openai.com/tokenizer" target="_blank" rel="noopener noreferrer">OpenAI Tokenizer</a>.
+      </p>
+    </div>
+
+    <div class="context-window-setting">
+      <p style="font-size:13px;color:var(--text-main);font-weight:600;margin-bottom:8px;line-height:1.5;">
+        Context window
+      </p>
+      <input class="context-window-control" id="context-window-input" type="number" min="0" step="1" value="10">
+      <p style="font-size:12px;color:var(--text-dim);line-height:1.45;margin-top:8px;">
+        Default: 10 recent messages. Use 0 to send all saved messages. Higher numbers can cost more or hit model limits.
+      </p>
+    </div>
+
+    <section class="accessibility-setting" aria-labelledby="accessibility-heading">
+      <h4 id="accessibility-heading" data-i18n="accessibility">Accessibility</h4>
+      <div class="accessibility-field">
+        <span class="accessibility-field-label" data-i18n="readingFont">Reading font</span>
+        <label class="accessibility-toggle-row" for="opendyslexic-toggle">
+          <span data-i18n="openDyslexic">Use OpenDyslexic</span>
+          <input id="opendyslexic-toggle" type="checkbox">
+        </label>
+      </div>
+      <label class="accessibility-field" for="interface-language-select">
+        <span class="accessibility-field-label" data-i18n="interfaceLanguage">Interface language</span>
+        <select class="accessibility-select" id="interface-language-select"></select>
+      </label>
+      <p class="accessibility-note" data-i18n="localOnly">Changes portal labels only. Your conversations are not translated.</p>
+    </section>
+    </details>
+    
+    <div id="sidebar-footer">
+      © Ellivien ✨ 2026
+    </div>
+  </div>
+  
+  <!-- Main chat -->
+  <div id="main">
+    <div id="header">
+      <div id="header-left">
+        <button id="hamburger" type="button" aria-label="Open menu" onclick="openSidebar(event)" ontouchend="openSidebar(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSidebar(event)}">☰</button>
+        <div id="title">[YOUR COMPANION NAME]</div>
+      </div>
+      <div id="header-controls">
+        <button class="icon-btn" id="theme-btn" type="button" title="Change color palette" aria-label="Change color palette" onclick="showThemePicker(); return false;" ontouchend="event.preventDefault(); showThemePicker(); return false;" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showThemePicker()}">🎨</button>
+        <button class="icon-btn" id="mode-btn" type="button" title="Toggle light/dark mode" aria-label="Toggle light/dark mode" onclick="toggleMode(); return false;" ontouchend="event.preventDefault(); toggleMode(); return false;" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMode()}">☀️</button>
+      </div>
+    </div>
+    
+    <div id="messages"></div>
+    
+    <div id="input-container">
+      <textarea id="input" placeholder="Type your message..." rows="1" aria-label="Message input"></textarea>
+      <button id="send-btn" type="button" aria-label="Send message">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- Theme picker modal -->
+<div id="theme-modal" class="modal-overlay">
+  <div class="modal">
+    <h3>Choose color palette</h3>
+    <div id="theme-options"></div>
+  </div>
+</div>
+
+<!-- Conversation search modal -->
+<div id="search-modal" class="modal-overlay">
+  <div class="modal">
+    <div class="search-modal-header">
+      <h3>Search Results</h3>
+      <button class="search-close-btn" type="button" onclick="closeSearchModal()" aria-label="Close search results">×</button>
+    </div>
+    <div id="search-results-content"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   COMPANION PROMPT
+   Added and updated inside the Portal. Stored only in this browser.
+   ═══════════════════════════════════════════════════════════════ */
+
+const COMPANION_PROMPT_STORAGE_KEY = 'ellivien-companion-system-prompt-v1';
+const RECOMMENDED_CACHEABLE_PROMPT_TOKENS = 1024;
+
+function estimateCompanionPromptTokens(text) {
+  const normalized = String(text || '').trim();
+  if (!normalized) return 0;
+  const wordEstimate = normalized.split(/\s+/).length * 1.3;
+  const characterEstimate = normalized.length / 4;
+  return Math.ceil(Math.max(wordEstimate, characterEstimate));
+}
+
+function getCompanionSystemPrompt() {
+  return (localStorage.getItem(COMPANION_PROMPT_STORAGE_KEY) || '').trim();
+}
+
+function getLocalTimeContext() {
+  const now = new Date();
+  const hour = now.getHours();
+  const timeOfDay = hour < 5 ? 'late night' : hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : hour < 21 ? 'evening' : 'night';
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'the user’s local time zone';
+  const formatted = new Intl.DateTimeFormat(undefined, {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+  }).format(now);
+  return `The user’s device currently reports ${formatted} (${timeZone}). It is ${timeOfDay} for the user. Treat this as the current local date and time when choosing time-sensitive wording. Do not mention it unless it is relevant.`;
+}
+
+function updateCompanionPromptButton() {
+  const button = document.getElementById('companion-prompt-btn');
+  if (!button) return;
+  const ready = Boolean(getCompanionSystemPrompt());
+  button.textContent = ready ? 'Edit companion prompt' : 'Add companion prompt';
+  button.style.background = ready ? '' : 'var(--secondary)';
+}
+
+function showCompanionPromptEditor() {
+  document.getElementById('companion-prompt-modal')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'companion-prompt-modal';
+  overlay.className = 'modal-overlay active';
+  overlay.style.cssText = 'align-items:flex-start;overflow-y:auto;padding:max(16px,env(safe-area-inset-top)) 12px max(16px,env(safe-area-inset-bottom))';
+
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-labelledby', 'companion-prompt-title');
+  modal.style.cssText = 'box-sizing:border-box;width:min(100%,680px);max-width:680px;margin:0 auto;padding:20px';
+  modal.innerHTML = [
+    '<h3 id="companion-prompt-title" style="margin:0 0 10px">Companion prompt</h3>',
+    '<p style="margin:0 0 12px;font-size:14px;line-height:1.45">Paste or update the prompt that defines your companion. It is saved privately in this browser and changes take effect on your next message.</p>',
+    '<textarea id="companion-prompt-input" aria-label="Companion prompt" placeholder="Paste or write the companion prompt here..." style="box-sizing:border-box;width:100%;min-height:min(48vh,420px);max-height:60vh;resize:vertical;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-main);color:var(--text-main);font:inherit;line-height:1.45"></textarea>',
+    '<p id="companion-prompt-token-count" aria-live="polite" style="margin:8px 0 0;font-size:13px;color:var(--text-dim)"></p>',
+    '<p id="companion-prompt-error" style="display:none;margin:8px 0 0;color:#dc2626;font-size:13px">Add a prompt before saving.</p>',
+    '<div id="companion-prompt-cache-warning" role="alert" style="display:none;margin-top:12px;padding:14px;border:1px solid #d97706;border-left:4px solid #d97706;border-radius:8px;background:rgba(217,119,6,0.1);font-size:13px;line-height:1.5">',
+    '<strong>This prompt may be too short for prompt caching on some OpenAI models.</strong>',
+    '<p style="margin:7px 0">The Portal estimates fewer than 1,024 tokens. A longer stable prompt may qualify for cached-input pricing when the configured model supports it. The estimate is approximate, so check the current model documentation and use the OpenAI Tokenizer for an exact count.</p>',
+    '<p style="margin:0 0 10px"><a href="https://platform.openai.com/tokenizer" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:700">Check with the OpenAI Tokenizer</a></p>',
+    '<div style="display:flex;flex-wrap:wrap;gap:8px">',
+    '<button id="keep-editing-companion-prompt" class="sidebar-action-btn" type="button" style="margin:0;flex:1 1 130px">Keep editing</button>',
+    '<button id="save-short-companion-prompt" class="sidebar-action-btn secondary" type="button" style="margin:0;flex:1 1 130px">Save anyway</button>',
+    '</div>',
+    '</div>',
+    '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px">',
+    '<button id="save-companion-prompt" class="sidebar-action-btn" type="button" style="margin:0;flex:1 1 150px">Save prompt</button>',
+    '<button id="cancel-companion-prompt" class="sidebar-action-btn secondary" type="button" style="margin:0;flex:1 1 110px">Cancel</button>',
+    '</div>'
+  ].join('');
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  const textarea = modal.querySelector('#companion-prompt-input');
+  const tokenCount = modal.querySelector('#companion-prompt-token-count');
+  const cacheWarning = modal.querySelector('#companion-prompt-cache-warning');
+  const updateTokenCount = () => {
+    const estimate = estimateCompanionPromptTokens(textarea.value);
+    tokenCount.textContent = estimate
+      ? `Estimated prompt length: about ${estimate.toLocaleString()} tokens. Recommended: at least 1,024 stable tokens.`
+      : 'Optional caching reminder: at least 1,024 stable tokens for compatible models.';
+    cacheWarning.style.display = 'none';
+  };
+  const commitPrompt = prompt => {
+    localStorage.setItem(COMPANION_PROMPT_STORAGE_KEY, prompt);
+    updateCompanionPromptButton();
+    overlay.remove();
+  };
+  textarea.value = getCompanionSystemPrompt();
+  updateTokenCount();
+  textarea.addEventListener('input', updateTokenCount);
+  textarea.focus();
+
+  modal.querySelector('#save-companion-prompt').addEventListener('click', () => {
+    const prompt = textarea.value.trim();
+    const error = modal.querySelector('#companion-prompt-error');
+    if (!prompt) {
+      error.style.display = 'block';
+      textarea.focus();
+      return;
+    }
+    error.style.display = 'none';
+    if (estimateCompanionPromptTokens(prompt) < RECOMMENDED_CACHEABLE_PROMPT_TOKENS) {
+      cacheWarning.style.display = 'block';
+      modal.querySelector('#keep-editing-companion-prompt').focus();
+      return;
+    }
+    commitPrompt(prompt);
+  });
+  modal.querySelector('#keep-editing-companion-prompt').addEventListener('click', () => {
+    cacheWarning.style.display = 'none';
+    textarea.focus();
+  });
+  modal.querySelector('#save-short-companion-prompt').addEventListener('click', () => {
+    const prompt = textarea.value.trim();
+    if (prompt) commitPrompt(prompt);
+  });
+  modal.querySelector('#cancel-companion-prompt').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', event => {
+    if (event.target === overlay) overlay.remove();
+  });
+}
+
+function initialiseCompanionPromptEditor() {
+  if (document.getElementById('companion-prompt-btn')) return;
+  const newThreadButton = document.querySelector('#thread-section .sidebar-action-btn[onclick*="createNewThread"]');
+  if (!newThreadButton) return;
+  const button = document.createElement('button');
+  button.id = 'companion-prompt-btn';
+  button.className = 'sidebar-action-btn secondary';
+  button.type = 'button';
+  button.addEventListener('click', showCompanionPromptEditor);
+  newThreadButton.insertAdjacentElement('afterend', button);
+  updateCompanionPromptButton();
+}
+
+initialiseCompanionPromptEditor();
+const DEFAULT_CONTEXT_WINDOW_MESSAGES = 10;
+const CONTEXT_WINDOW_STORAGE_KEY = 'contextWindowMessages';
+const DEFAULT_REASONING_EFFORT = 'medium';
+const REASONING_EFFORT_STORAGE_KEY = 'gpt56SolReasoningEffort';
+const ALLOWED_REASONING_EFFORTS = ['none', 'low', 'medium', 'high', 'xhigh', 'max'];
+const DEFAULT_VERBOSITY = 'high';
+const VERBOSITY_STORAGE_KEY = 'gpt56SolTextVerbosity';
+const ALLOWED_VERBOSITY_LEVELS = ['low', 'medium', 'high'];
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE VIEWPORT FIXES
+   ═══════════════════════════════════════════════════════════════ */
+
+function applyViewportHeight() {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--app-vh', `${vh}px`);
+}
+
+applyViewportHeight();
+window.addEventListener('resize', applyViewportHeight);
+window.addEventListener('orientationchange', applyViewportHeight);
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR CONTROLS
+   ═══════════════════════════════════════════════════════════════ */
+
+const sidebar = document.getElementById('sidebar');
+const hamburger = document.getElementById('hamburger');
+const sidebarClose = document.getElementById('sidebar-close');
+
+function openSidebar(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  sidebar.classList.add('open');
+  return false;
+}
+
+function closeSidebar(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  sidebar.classList.remove('open');
+  return false;
+}
+
+document.addEventListener('click', (event) => {
+  if (!sidebar.classList.contains('open')) return;
+  if (sidebar.contains(event.target) || hamburger.contains(event.target)) return;
+  sidebar.classList.remove('open');
+});
+
+document.addEventListener('touchend', (event) => {
+  if (!sidebar.classList.contains('open')) return;
+  if (sidebar.contains(event.target) || hamburger.contains(event.target)) return;
+  sidebar.classList.remove('open');
+}, { passive: true });
+
+function getContextWindowSize() {
+  const value = Number(localStorage.getItem(CONTEXT_WINDOW_STORAGE_KEY) || DEFAULT_CONTEXT_WINDOW_MESSAGES);
+  if (!Number.isFinite(value)) return DEFAULT_CONTEXT_WINDOW_MESSAGES;
+  if (value <= 0) return 0;
+  return Math.max(Math.round(value), 1);
+}
+
+const contextWindowInput = document.getElementById('context-window-input');
+if (contextWindowInput) {
+  contextWindowInput.value = String(getContextWindowSize());
+  contextWindowInput.addEventListener('change', () => {
+    const rawText = contextWindowInput.value.trim();
+    const rawValue = rawText === '' ? DEFAULT_CONTEXT_WINDOW_MESSAGES : Number(rawText);
+    const value = Number.isFinite(rawValue) ? Math.max(Math.round(rawValue), 0) : DEFAULT_CONTEXT_WINDOW_MESSAGES;
+    contextWindowInput.value = String(value);
+    localStorage.setItem(CONTEXT_WINDOW_STORAGE_KEY, String(value));
+  });
+}
+
+function getReasoningEffort() {
+  const savedValue = localStorage.getItem(REASONING_EFFORT_STORAGE_KEY);
+  return ALLOWED_REASONING_EFFORTS.includes(savedValue) ? savedValue : DEFAULT_REASONING_EFFORT;
+}
+
+const reasoningEffortSelect = document.getElementById('reasoning-effort-select');
+if (reasoningEffortSelect) {
+  reasoningEffortSelect.value = getReasoningEffort();
+  reasoningEffortSelect.addEventListener('change', () => {
+    const value = ALLOWED_REASONING_EFFORTS.includes(reasoningEffortSelect.value)
+      ? reasoningEffortSelect.value
+      : DEFAULT_REASONING_EFFORT;
+    reasoningEffortSelect.value = value;
+    localStorage.setItem(REASONING_EFFORT_STORAGE_KEY, value);
+  });
+}
+
+function getTextVerbosity() {
+  const savedValue = localStorage.getItem(VERBOSITY_STORAGE_KEY);
+  return ALLOWED_VERBOSITY_LEVELS.includes(savedValue) ? savedValue : DEFAULT_VERBOSITY;
+}
+
+const verbositySelect = document.getElementById('verbosity-select');
+if (verbositySelect) {
+  verbositySelect.value = getTextVerbosity();
+  verbositySelect.addEventListener('change', () => {
+    const value = ALLOWED_VERBOSITY_LEVELS.includes(verbositySelect.value)
+      ? verbositySelect.value
+      : DEFAULT_VERBOSITY;
+    verbositySelect.value = value;
+    localStorage.setItem(VERBOSITY_STORAGE_KEY, value);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   THEME SYSTEM
+   ═══════════════════════════════════════════════════════════════ */
+
+const THEMES = {
+  purple: {
+    name: 'Purple & Green',
+    light: {
+      primary: '#10b981',
+      primaryHover: '#059669',
+      secondary: '#8b5cf6',
+      bgMain: '#f5f5f7',
+      bgChat: '#ffffff',
+      bgUser: '#ffffff',
+      bgAssistant: '#e9d5ff',
+      textMain: '#1f2937',
+      textDim: '#6b7280',
+      border: '#e5e7eb'
+    },
+    dark: {
+      primary: '#8b5cf6',
+      primaryHover: '#7c3aed',
+      secondary: '#10b981',
+      bgMain: '#1a1a1a',
+      bgChat: '#2d2d2d',
+      bgUser: '#374151',
+      bgAssistant: '#1f2937',
+      textMain: '#f9fafb',
+      textDim: '#9ca3af',
+      border: '#404040'
+    }
+  },
+  ocean: {
+    name: 'Ocean Blue & Teal',
+    light: {
+      primary: '#14b8a6',
+      primaryHover: '#0d9488',
+      secondary: '#0ea5e9',
+      bgMain: '#f5f5f7',
+      bgChat: '#ffffff',
+      bgUser: '#ffffff',
+      bgAssistant: '#dbeafe',
+      textMain: '#1f2937',
+      textDim: '#6b7280',
+      border: '#e5e7eb'
+    },
+    dark: {
+      primary: '#0ea5e9',
+      primaryHover: '#0284c7',
+      secondary: '#14b8a6',
+      bgMain: '#0f172a',
+      bgChat: '#1e293b',
+      bgUser: '#334155',
+      bgAssistant: '#1e293b',
+      textMain: '#f1f5f9',
+      textDim: '#94a3b8',
+      border: '#334155'
+    }
+  },
+  amber: {
+    name: 'Warm Amber & Rose',
+    light: {
+      primary: '#f59e0b',
+      primaryHover: '#d97706',
+      secondary: '#f43f5e',
+      bgMain: '#fafaf9',
+      bgChat: '#ffffff',
+      bgUser: '#ffffff',
+      bgAssistant: '#fecdd3',
+      textMain: '#1c1917',
+      textDim: '#78716c',
+      border: '#e7e5e4'
+    },
+    dark: {
+      primary: '#f59e0b',
+      primaryHover: '#d97706',
+      secondary: '#f43f5e',
+      bgMain: '#1c1917',
+      bgChat: '#292524',
+      bgUser: '#44403c',
+      bgAssistant: '#292524',
+      textMain: '#fafaf9',
+      textDim: '#a8a29e',
+      border: '#44403c'
+    }
+  },
+  forest: {
+    name: 'Forest Green & Sage',
+    light: {
+      primary: '#16a34a',
+      primaryHover: '#15803d',
+      secondary: '#84cc16',
+      bgMain: '#f5f5f7',
+      bgChat: '#ffffff',
+      bgUser: '#ffffff',
+      bgAssistant: '#d9f99d',
+      textMain: '#1f2937',
+      textDim: '#6b7280',
+      border: '#e5e7eb'
+    },
+    dark: {
+      primary: '#16a34a',
+      primaryHover: '#15803d',
+      secondary: '#84cc16',
+      bgMain: '#18181b',
+      bgChat: '#27272a',
+      bgUser: '#3f3f46',
+      bgAssistant: '#27272a',
+      textMain: '#fafafa',
+      textDim: '#a1a1aa',
+      border: '#3f3f46'
+    }
+  }
+};
+
+let currentTheme = localStorage.getItem('theme-palette') || 'purple';
+let currentMode = localStorage.getItem('theme-mode') || 'light';
+
+function applyTheme(palette, mode) {
+  const theme = THEMES[palette][mode];
+  const root = document.documentElement;
+  
+  root.style.setProperty('--primary', theme.primary);
+  root.style.setProperty('--primary-hover', theme.primaryHover);
+  root.style.setProperty('--secondary', theme.secondary);
+  root.style.setProperty('--bg-main', theme.bgMain);
+  root.style.setProperty('--bg-chat', theme.bgChat);
+  root.style.setProperty('--bg-user', theme.bgUser);
+  root.style.setProperty('--bg-assistant', theme.bgAssistant);
+  root.style.setProperty('--text-main', theme.textMain);
+  root.style.setProperty('--text-dim', theme.textDim);
+  root.style.setProperty('--border', theme.border);
+  
+  document.getElementById('mode-btn').textContent = mode === 'light' ? '☀️' : '🌙';
+  
+  currentTheme = palette;
+  currentMode = mode;
+  localStorage.setItem('theme-palette', palette);
+  localStorage.setItem('theme-mode', mode);
+}
+
+function toggleMode() {
+  const newMode = currentMode === 'light' ? 'dark' : 'light';
+  applyTheme(currentTheme, newMode);
+}
+
+function showThemePicker() {
+  const modal = document.getElementById('theme-modal');
+  const optionsContainer = document.getElementById('theme-options');
+  
+  optionsContainer.innerHTML = '';
+  
+  Object.keys(THEMES).forEach(key => {
+    const option = document.createElement('div');
+    option.className = 'theme-option' + (key === currentTheme ? ' selected' : '');
+    
+    const preview = document.createElement('div');
+    preview.className = 'theme-preview';
+    preview.innerHTML = `
+      <span style="background:${THEMES[key][currentMode].primary}"></span>
+      <span style="background:${THEMES[key][currentMode].secondary}"></span>
+      <span style="background:${THEMES[key][currentMode].bgAssistant}"></span>
+    `;
+    
+    const name = document.createElement('span');
+    name.textContent = THEMES[key].name;
+    
+    option.appendChild(preview);
+    option.appendChild(name);
+    
+    option.onclick = () => {
+      applyTheme(key, currentMode);
+      modal.classList.remove('active');
+    };
+
+    option.addEventListener('touchend', (event) => {
+      event.preventDefault();
+      applyTheme(key, currentMode);
+      modal.classList.remove('active');
+    }, { passive: false });
+    
+    optionsContainer.appendChild(option);
+  });
+  
+  modal.classList.add('active');
+}
+
+// Apply saved theme on load
+applyTheme(currentTheme, currentMode);
+
+function showStorageSecurityInfo() {
+  const checklistKey = 'ellivien-security-sync-checklist-v1';
+  const saved = JSON.parse(localStorage.getItem(checklistKey) || '{}');
+  const checks = [
+    ['password-gate', 'I have activated the password gate on this same Portal address.'],
+    ['wrong-password', 'I tested that a wrong password is refused, then signed in with the correct one.'],
+    ['cloud-sync', 'I used “Cloud sync now” and saw that it completed successfully.'],
+    ['restore-test', 'I checked that my threads can be restored from Cloudflare KV in a second browser or device.'],
+    ['backup', 'I saved a fresh Full Export as an extra safety copy.']
+  ];
+  const existing = document.getElementById('storage-security-info-modal');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'storage-security-info-modal';
+  overlay.className = 'modal-overlay active';
+  overlay.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="storage-security-title">
+    <h3 id="storage-security-title">Local mode is active</h3>
+    <p>Your threaded Portal is working normally. Threads are currently saved in IndexedDB on this browser and device.</p>
+    <p>Password protection and durable Cloudflare KV Sync are included free in the download folder named <strong>Password + KV Sync - Activate Later</strong>.</p>
+    <p>Password protects access to the Portal and model proxy. KV protects you from relying on one browser database and enables cross-device thread sync.</p>
+    <p>Keep regular exports. When you feel ready, follow the included activation guide on this same Netlify site. Only complete this checklist <strong>after</strong> you have activated the secure version.</p>
+    <div id="security-sync-checklist" style="margin:16px 0;text-align:left"></div>
+    <p id="security-sync-complete" style="display:none;color:var(--secondary);font-weight:700;line-height:1.45;">Security and cloud sync confirmed. This reminder will now disappear.</p>
+    <button class="sidebar-action-btn" type="button" onclick="document.getElementById('storage-security-info-modal')?.remove()">Close</button>
+  </div>`;
+  const checklist = overlay.querySelector('#security-sync-checklist');
+  const complete = overlay.querySelector('#security-sync-complete');
+  const update = () => {
+    localStorage.setItem(checklistKey, JSON.stringify(saved));
+    const allDone = checks.every(([key]) => saved[key]);
+    complete.style.display = allDone ? 'block' : 'none';
+    if (allDone) {
+      setTimeout(() => {
+        overlay.remove();
+        document.querySelector('[onclick="showStorageSecurityInfo()"]')?.remove();
+      }, 1200);
+    }
+  };
+  checks.forEach(([key, label]) => {
+    const row = document.createElement('label');
+    row.style.cssText = 'display:flex;gap:9px;align-items:flex-start;margin:10px 0;font-size:13px;line-height:1.4;cursor:pointer';
+    row.innerHTML = `<input type="checkbox" ${saved[key] ? 'checked' : ''} style="margin-top:3px"><span>${label}</span>`;
+    row.querySelector('input').addEventListener('change', event => { saved[key] = event.target.checked; update(); });
+    checklist.appendChild(row);
+  });
+  update();
+  overlay.addEventListener('click', event => {
+    if (event.target === overlay) overlay.remove();
+  });
+  document.body.appendChild(overlay);
+}
+
+// Theme modal close
+document.getElementById('theme-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'theme-modal') {
+    e.target.classList.remove('active');
+  }
+});
+
+document.getElementById('theme-modal').addEventListener('touchend', (e) => {
+  if (e.target.id === 'theme-modal') {
+    e.preventDefault();
+    e.target.classList.remove('active');
+  }
+}, { passive: false });
+
+document.getElementById('search-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'search-modal') {
+    e.target.classList.remove('active');
+  }
+});
+
+document.getElementById('search-modal').addEventListener('touchend', (e) => {
+  if (e.target.id === 'search-modal') {
+    e.preventDefault();
+    e.target.classList.remove('active');
+  }
+}, { passive: false });
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN CHAT FUNCTIONALITY
+   ═══════════════════════════════════════════════════════════════ */
+
+const messagesDiv = document.getElementById('messages');
+const input = document.getElementById('input');
+const sendBtn = document.getElementById('send-btn');
+const threadSearch = document.getElementById('thread-search');
+const threadList = document.getElementById('thread-list');
+
+const THREADS_KEY = 'companionPortalThreads';
+const CURRENT_THREAD_KEY = 'companionPortalCurrentThread';
+const LEGACY_CONVERSATION_KEY = 'conversation';
+const IDB_NAME = 'companionPortalThreadsDb';
+const BASIC_IDB_NAME = 'companionPortalBasicDb';
+const IDB_VERSION = 1;
+const IDB_STORE = 'portalState';
+
+let threads = {};
+let currentThreadId = null;
+
+function openPortalDb() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(IDB_NAME, IDB_VERSION);
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        db.createObjectStore(IDB_STORE);
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function openExistingDb(name) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(name);
+    let existedBeforeOpen = true;
+
+    request.onupgradeneeded = () => {
+      existedBeforeOpen = false;
+    };
+
+    request.onsuccess = () => {
+      const db = request.result;
+      if (!existedBeforeOpen) {
+        db.close();
+        indexedDB.deleteDatabase(name);
+        resolve(null);
+        return;
+      }
+      resolve(db);
+    };
+
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function getPortalState(key) {
+  const db = await openPortalDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readonly');
+    const request = tx.objectStore(IDB_STORE).get(key);
+
+    request.onsuccess = () => resolve(request.result ?? null);
+    request.onerror = () => reject(request.error);
+    tx.oncomplete = () => db.close();
+    tx.onerror = () => {
+      db.close();
+      reject(tx.error);
+    };
+  });
+}
+
+async function getBasicPortalConversation() {
+  const db = await openExistingDb(BASIC_IDB_NAME);
+  if (!db) return [];
+
+  return new Promise((resolve, reject) => {
+    if (!db.objectStoreNames.contains(IDB_STORE)) {
+      db.close();
+      resolve([]);
+      return;
+    }
+
+    const tx = db.transaction(IDB_STORE, 'readonly');
+    const request = tx.objectStore(IDB_STORE).get(LEGACY_CONVERSATION_KEY);
+
+    request.onsuccess = () => {
+      const value = request.result;
+      resolve(Array.isArray(value) ? value : []);
+    };
+    request.onerror = () => reject(request.error);
+    tx.oncomplete = () => db.close();
+    tx.onerror = () => {
+      db.close();
+      reject(tx.error);
+    };
+  });
+}
+
+async function setPortalState(key, value) {
+  const db = await openPortalDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).put(value, key);
+
+    tx.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    tx.onerror = () => {
+      db.close();
+      reject(tx.error);
+    };
+  });
+}
+
+function saveCurrentThreadId() {
+  setPortalState(CURRENT_THREAD_KEY, currentThreadId).catch(error => {
+    console.warn('Could not save current thread id to IndexedDB:', error);
+  });
+}
+
+function makeThread(title = 'New conversation', messages = []) {
+  const now = Date.now();
+  const id = `thread_${now}_${Math.random().toString(36).slice(2, 8)}`;
+  return {
+    id,
+    title,
+    messages,
+    pinned: false,
+    created: now,
+    updated: now
+  };
+}
+
+async function loadThreads() {
+  try {
+    threads = await getPortalState(THREADS_KEY) || {};
+  } catch (error) {
+    console.warn('Could not load saved threads from IndexedDB:', error);
+    try {
+      threads = JSON.parse(localStorage.getItem(THREADS_KEY) || '{}');
+    } catch (fallbackError) {
+      console.warn('Could not load fallback localStorage threads:', fallbackError);
+      threads = {};
+    }
+  }
+  
+  try {
+    currentThreadId = await getPortalState(CURRENT_THREAD_KEY);
+  } catch (error) {
+    console.warn('Could not load current thread id from IndexedDB:', error);
+    currentThreadId = localStorage.getItem(CURRENT_THREAD_KEY);
+  }
+  
+  const hasThreads = Object.keys(threads).length > 0;
+  let legacyMessages = [];
+
+  if (!hasThreads) {
+    try {
+      legacyMessages = await getBasicPortalConversation();
+      if (legacyMessages.length) {
+        console.log('Migrated conversation from basic IndexedDB portal.');
+      }
+    } catch (error) {
+      console.warn('Could not load basic IndexedDB conversation:', error);
+    }
+  }
+
+  try {
+    if (!legacyMessages.length) {
+      legacyMessages = JSON.parse(localStorage.getItem(LEGACY_CONVERSATION_KEY) || '[]');
+    }
+  } catch (error) {
+    console.warn('Could not load old single conversation:', error);
+  }
+  
+  if (!hasThreads && legacyMessages.length) {
+    const migrated = makeThread('Imported conversation', legacyMessages);
+    threads[migrated.id] = migrated;
+    currentThreadId = migrated.id;
+    saveThreads();
+    saveCurrentThreadId();
+    return;
+  }
+  
+  if (!hasThreads) {
+    const firstThread = makeThread();
+    threads[firstThread.id] = firstThread;
+    currentThreadId = firstThread.id;
+    saveThreads();
+    saveCurrentThreadId();
+    return;
+  }
+  
+  if (!currentThreadId || !threads[currentThreadId]) {
+    currentThreadId = Object.keys(threads).sort((a, b) => {
+      return threads[b].updated - threads[a].updated;
+    })[0];
+    saveCurrentThreadId();
+  }
+}
+
+function saveThreads() {
+  setPortalState(THREADS_KEY, threads).catch(error => {
+    console.warn('Could not save threads to IndexedDB:', error);
+  });
+}
+
+function getCurrentThread() {
+  if (!currentThreadId || !threads[currentThreadId]) {
+    const thread = makeThread();
+    threads[thread.id] = thread;
+    currentThreadId = thread.id;
+    saveCurrentThreadId();
+    saveThreads();
+  }
+  return threads[currentThreadId];
+}
+
+function getFirstUserMessage(thread) {
+  return (thread.messages || []).find(msg => msg.role === 'user' && msg.content);
+}
+
+function getLastVisibleMessage(thread) {
+  return [...(thread.messages || [])].reverse().find(msg => msg.role !== 'system' && msg.content);
+}
+
+function cleanPreview(text, maxLength = 72) {
+  const preview = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!preview) return 'No messages yet';
+  return preview.length > maxLength ? `${preview.slice(0, maxLength - 1)}...` : preview;
+}
+
+function escapeRegExp(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function highlightSearchTerm(text, query) {
+  const value = String(text || '');
+  if (!query) return escapeHtml(value);
+  
+  const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+  return value.split(regex).map(part => {
+    if (part.toLowerCase() === query.toLowerCase()) {
+      return `<span class="search-highlight">${escapeHtml(part)}</span>`;
+    }
+    return escapeHtml(part);
+  }).join('');
+}
+
+function getSearchPreview(thread, query) {
+  const messages = thread.messages || [];
+  if (!query) {
+    const lastMessage = getLastVisibleMessage(thread);
+    return lastMessage ? cleanPreview(lastMessage.content) : 'No messages yet';
+  }
+  
+  const lowerQuery = query.toLowerCase();
+  const matchedMessage = messages.find(msg => {
+    return msg.content && msg.content.toLowerCase().includes(lowerQuery);
+  });
+  
+  if (!matchedMessage) {
+    const lastMessage = getLastVisibleMessage(thread);
+    return lastMessage ? cleanPreview(lastMessage.content) : 'No messages yet';
+  }
+  
+  const compact = String(matchedMessage.content || '').replace(/\s+/g, ' ').trim();
+  const matchIndex = compact.toLowerCase().indexOf(lowerQuery);
+  const start = Math.max(0, matchIndex - 36);
+  const end = Math.min(compact.length, matchIndex + query.length + 36);
+  const prefix = start > 0 ? '...' : '';
+  const suffix = end < compact.length ? '...' : '';
+  return `${prefix}${compact.slice(start, end)}${suffix}`;
+}
+
+function updateThreadTitle(thread) {
+  const firstUserMessage = getFirstUserMessage(thread);
+  if (!firstUserMessage) return;
+  
+  if (!thread.title || thread.title === 'New conversation' || thread.title === 'Imported conversation') {
+    thread.title = cleanPreview(firstUserMessage.content, 42);
+  }
+}
+
+function formatThreadDate(timestamp) {
+  const date = new Date(timestamp || Date.now());
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function renderMessages() {
+  messagesDiv.innerHTML = '';
+  getCurrentThread().messages.forEach((msg, index) => {
+    if (msg.role !== 'system') {
+      displayMessage(msg.role, msg.content, index);
+    }
+  });
+}
+
+function getCompanionName() {
+  return document.getElementById('title')?.textContent?.trim() || 'Companion';
+}
+
+function makeSafeFilename(value) {
+  return String(value || 'conversation')
+    .replace(/[\\/:*?"<>|]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 80) || 'conversation';
+}
+
+function exportThreadToMarkdown(threadId) {
+  const thread = threads[threadId];
+  if (!thread) return;
+
+  const companionName = getCompanionName();
+  const title = thread.title || 'New conversation';
+  const lines = [
+    `# ${title}`,
+    '',
+    `Created: ${new Date(thread.created || Date.now()).toLocaleString('en-GB')}`,
+    `Updated: ${new Date(thread.updated || Date.now()).toLocaleString('en-GB')}`,
+    '',
+    '---',
+    ''
+  ];
+
+  (thread.messages || []).forEach(message => {
+    if (!message || message.role === 'system' || !message.content) return;
+    const role = message.role === 'user' ? 'user' : 'assistant';
+    const label = role === 'user' ? 'You' : companionName;
+    lines.push(`<!-- role:${role} -->`, `## ${label}`, '', message.content, '', '---', '');
+  });
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+  link.href = url;
+  link.download = `${date}-${makeSafeFilename(title)}.md`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function parseThreadMarkdown(markdown, fallbackTitle) {
+  const lines = String(markdown || '').split(/\r?\n/);
+  const firstTitle = lines.find(line => /^#\s+/.test(line));
+  const title = firstTitle ? firstTitle.replace(/^#\s+/, '').trim() : fallbackTitle;
+  const messages = [];
+  let currentRole = null;
+  let buffer = [];
+
+  const flush = () => {
+    const content = buffer.join('\n').trim();
+    if (currentRole && content) {
+      messages.push({ role: currentRole, content });
+    }
+    buffer = [];
+  };
+
+  lines.forEach(line => {
+    const roleMarker = line.match(/^<!--\s*role:(user|assistant)\s*-->/i);
+    if (roleMarker) {
+      flush();
+      currentRole = roleMarker[1].toLowerCase();
+      return;
+    }
+
+    if (/^---$/.test(line.trim())) {
+      flush();
+      currentRole = null;
+      return;
+    }
+
+    const heading = line.match(/^##\s+(.+)$/);
+    if (heading) {
+      const label = heading[1].trim().toLowerCase();
+      const isUser = ['you', 'user', 'me'].includes(label);
+      const isAssistant = ['assistant', 'companion'].includes(label) || label === getCompanionName().toLowerCase();
+
+      if (!currentRole || isUser || isAssistant) {
+        flush();
+        currentRole = isUser ? 'user' : 'assistant';
+        return;
+      }
+    }
+
+    if (!currentRole && (/^#\s+/.test(line) || /^created:/i.test(line) || /^updated:/i.test(line) || !line.trim())) {
+      return;
+    }
+
+    if (currentRole) {
+      buffer.push(line);
+    }
+  });
+
+  flush();
+  return { title, messages };
+}
+
+function restoreThreadFromMarkdown(threadId) {
+  const thread = threads[threadId];
+  if (!thread) return;
+
+  const picker = document.createElement('input');
+  picker.type = 'file';
+  picker.accept = '.md,.markdown,.txt,text/markdown,text/plain';
+  picker.onchange = () => {
+    const file = picker.files && picker.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const parsed = parseThreadMarkdown(reader.result, file.name.replace(/\.(md|markdown|txt)$/i, ''));
+      if (!parsed.messages.length) {
+        alert('No messages were found in that file.');
+        return;
+      }
+
+      if (!confirm(`Replace "${thread.title || 'New conversation'}" with ${parsed.messages.length} imported messages?`)) {
+        return;
+      }
+
+      thread.title = parsed.title || thread.title || 'Imported conversation';
+      thread.messages = parsed.messages;
+      thread.updated = Date.now();
+      saveThreads();
+      switchThread(threadId);
+      renderThreadList();
+    };
+    reader.readAsText(file);
+  };
+  picker.click();
+}
+
+function normaliseImportedMessages(messages) {
+  if (!Array.isArray(messages)) return [];
+  return messages
+    .map(message => {
+      if (!message || typeof message !== 'object') return null;
+      const role = message.role === 'user' ? 'user' : message.role === 'assistant' ? 'assistant' : null;
+      const content = typeof message.content === 'string' ? message.content.trim() : '';
+      if (!role || !content) return null;
+      return { role, content };
+    })
+    .filter(Boolean);
+}
+
+function parseThreadJson(rawJson, fallbackTitle) {
+  const parsed = JSON.parse(String(rawJson || '{}'));
+  const sourceThread = parsed.thread && typeof parsed.thread === 'object' ? parsed.thread : parsed;
+  const messages = normaliseImportedMessages(sourceThread.messages || parsed.messages || []);
+  const title = sourceThread.title || sourceThread.summary || parsed.title || parsed.summary || fallbackTitle;
+  return { title, messages };
+}
+
+function restoreThreadFromJson(threadId) {
+  const thread = threads[threadId];
+  if (!thread) return;
+
+  const picker = document.createElement('input');
+  picker.type = 'file';
+  picker.accept = '.json,application/json';
+  picker.onchange = () => {
+    const file = picker.files && picker.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      let parsed;
+      try {
+        parsed = parseThreadJson(reader.result, file.name.replace(/\.json$/i, ''));
+      } catch (error) {
+        alert('That JSON file could not be read.');
+        console.error('JSON restore failed:', error);
+        return;
+      }
+
+      if (!parsed.messages.length) {
+        alert('No messages were found in that JSON file.');
+        return;
+      }
+
+      if (!confirm(`Replace "${thread.title || 'New conversation'}" with ${parsed.messages.length} imported messages?`)) {
+        return;
+      }
+
+      thread.title = parsed.title || thread.title || 'Imported conversation';
+      thread.messages = parsed.messages;
+      thread.updated = Date.now();
+      saveThreads();
+      switchThread(threadId);
+      renderThreadList();
+    };
+    reader.readAsText(file);
+  };
+  picker.click();
+}
+
+function renderThreadList() {
+  const query = (threadSearch.value || '').trim().toLowerCase();
+  const sortedThreads = Object.values(threads).sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return b.updated - a.updated;
+  });
+  const matchingThreads = sortedThreads.filter(thread => {
+    const searchable = [
+      thread.title,
+      formatThreadDate(thread.updated),
+      ...(thread.messages || []).map(msg => msg.content || '')
+    ].join(' ').toLowerCase();
+    return !query || searchable.includes(query);
+  });
+  
+  threadList.innerHTML = '';
+  
+  if (!matchingThreads.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-thread-list';
+    empty.textContent = query ? 'No matching threads' : 'No threads yet';
+    threadList.appendChild(empty);
+    return;
+  }
+  
+  matchingThreads.forEach(thread => {
+    updateThreadTitle(thread);
+    
+    const titleText = thread.pinned ? `Pinned: ${thread.title || 'New conversation'}` : thread.title || 'New conversation';
+    const dateText = formatThreadDate(thread.updated);
+    const previewText = getSearchPreview(thread, query);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = [
+      'thread-item',
+      thread.id === currentThreadId ? 'active' : '',
+      thread.pinned ? 'pinned' : ''
+    ].filter(Boolean).join(' ');
+    button.onclick = (event) => showThreadModal(thread.id, event);
+    
+    button.innerHTML = `
+      <div class="thread-title">${highlightSearchTerm(titleText, query)}</div>
+      <div class="thread-meta">${highlightSearchTerm(dateText, query)}</div>
+      <div class="thread-preview">${highlightSearchTerm(previewText, query)}</div>
+    `;
+    
+    threadList.appendChild(button);
+  });
+}
+
+function getThreadActivityTimestamp(thread) {
+  const updated = Number(thread?.updated || thread?.updatedAt || 0);
+  if (updated) return updated;
+  const lastMessage = Array.isArray(thread?.messages) && thread.messages.length ? thread.messages[thread.messages.length - 1] : null;
+  const messageTimestamp = lastMessage?.timestamp ? Date.parse(lastMessage.timestamp) : 0;
+  if (messageTimestamp && !Number.isNaN(messageTimestamp)) return messageTimestamp;
+  return Number(thread?.created || thread?.createdAt || 0) || 0;
+}
+
+function getSearchSnippet(text, query) {
+  const value = String(text || '').replace(/\s+/g, ' ').trim();
+  const lowerValue = value.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const matchIndex = lowerValue.indexOf(lowerQuery);
+  if (matchIndex < 0) return escapeHtml(cleanPreview(value, 110));
+  const start = Math.max(0, matchIndex - 42);
+  const end = Math.min(value.length, matchIndex + query.length + 42);
+  const prefix = start > 0 ? '...' : '';
+  const suffix = end < value.length ? '...' : '';
+  return `${prefix}${highlightSearchTerm(value.slice(start, end), query)}${suffix}`;
+}
+
+function openThreadAtMessage(threadId, messageIndex = null) {
+  closeSearchModal();
+  switchThread(threadId);
+  if (Number.isInteger(messageIndex)) {
+    setTimeout(() => scrollToMessage(messageIndex), 80);
+  }
+}
+
+function closeSearchModal() {
+  document.getElementById('search-modal')?.classList.remove('active');
+}
+
+function performFullSearch() {
+  const query = (threadSearch.value || '').trim();
+  const modal = document.getElementById('search-modal');
+  const content = document.getElementById('search-results-content');
+  if (!modal || !content) return;
+
+  if (!query) {
+    content.innerHTML = '<div class="empty-thread-list">Enter a search term first.</div>';
+    modal.classList.add('active');
+    return;
+  }
+
+  const lowerQuery = query.toLowerCase();
+  const results = Object.values(threads).map(thread => {
+    const matches = [];
+    const title = thread.title || 'New conversation';
+    if (title.toLowerCase().includes(lowerQuery)) {
+      matches.push({ type: 'title', content: title, messageIndex: null });
+    }
+
+    (thread.messages || []).forEach((message, messageIndex) => {
+      if (!message || message.role === 'system' || !message.content) return;
+      if (message.content.toLowerCase().includes(lowerQuery)) {
+        matches.push({
+          type: 'message',
+          role: message.role,
+          content: message.content,
+          messageIndex
+        });
+      }
+    });
+
+    return { thread, matches };
+  }).filter(result => result.matches.length);
+
+  results.sort((a, b) => getThreadActivityTimestamp(b.thread) - getThreadActivityTimestamp(a.thread));
+  content.innerHTML = '';
+
+  if (!results.length) {
+    content.innerHTML = '<div class="empty-thread-list">No matches found.</div>';
+    modal.classList.add('active');
+    return;
+  }
+
+  results.forEach(result => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'search-result-thread';
+
+    const header = document.createElement('button');
+    header.type = 'button';
+    header.className = 'search-result-thread-title';
+    header.innerHTML = highlightSearchTerm(result.thread.title || 'New conversation', query);
+    header.onclick = () => openThreadAtMessage(result.thread.id);
+    wrapper.appendChild(header);
+
+    result.matches.sort((a, b) => {
+      if (a.type === 'title' && b.type !== 'title') return -1;
+      if (a.type !== 'title' && b.type === 'title') return 1;
+      return (b.messageIndex ?? -1) - (a.messageIndex ?? -1);
+    });
+
+    result.matches.slice(0, 8).forEach(match => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'search-result-item';
+      const roleLabel = match.type === 'title'
+        ? 'Thread title'
+        : match.role === 'user'
+          ? 'You'
+          : getCompanionName();
+      item.innerHTML = `
+        <div class="search-result-role">${escapeHtml(roleLabel)}</div>
+        <div class="search-result-snippet">${getSearchSnippet(match.content, query)}</div>
+      `;
+      item.onclick = () => openThreadAtMessage(result.thread.id, match.messageIndex);
+      wrapper.appendChild(item);
+    });
+
+    if (result.matches.length > 8) {
+      const more = document.createElement('div');
+      more.className = 'empty-thread-list';
+      more.textContent = `${result.matches.length - 8} more matches in this thread`;
+      wrapper.appendChild(more);
+    }
+
+    content.appendChild(wrapper);
+  });
+
+  modal.classList.add('active');
+}
+
+function showThreadModal(threadId, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  
+  const thread = threads[threadId];
+  if (!thread) return false;
+  
+  const existingModal = document.getElementById('thread-modal');
+  if (existingModal) existingModal.remove();
+  
+  const overlay = document.createElement('div');
+  overlay.id = 'thread-modal';
+  overlay.className = 'modal-overlay active';
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  
+  const title = document.createElement('div');
+  title.className = 'thread-action-title';
+  title.textContent = thread.title || 'New conversation';
+  modal.appendChild(title);
+  
+  const actions = [
+    { text: 'Open Thread', action: () => { overlay.remove(); switchThread(threadId); } },
+    { text: 'Rename', action: () => { overlay.remove(); renameThread(threadId); } },
+    { text: thread.pinned ? 'Unpin' : 'Pin', action: () => { overlay.remove(); togglePin(threadId); } },
+    { text: 'Export to .md', action: () => { overlay.remove(); exportThreadToMarkdown(threadId); } },
+    { text: 'Restore from .md', action: () => { overlay.remove(); restoreThreadFromMarkdown(threadId); } },
+    { text: 'Restore from .json', action: () => { overlay.remove(); restoreThreadFromJson(threadId); } },
+    { text: 'Delete', danger: true, action: () => { overlay.remove(); deleteThread(threadId); } },
+    { text: 'Cancel', action: () => overlay.remove() }
+  ];
+  
+  actions.forEach(action => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'thread-action-btn' + (action.danger ? ' danger' : '');
+    button.textContent = action.text;
+    button.onclick = action.action;
+    modal.appendChild(button);
+  });
+  
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  
+  overlay.onclick = (clickEvent) => {
+    if (clickEvent.target === overlay) overlay.remove();
+  };
+  
+  return false;
+}
+
+function renameThread(threadId) {
+  const thread = threads[threadId];
+  if (!thread) return;
+  
+  const newName = prompt('Rename thread:', thread.title || 'New conversation');
+  if (!newName || !newName.trim()) return;
+  
+  thread.title = newName.trim();
+  thread.updated = Date.now();
+  saveThreads();
+  renderThreadList();
+}
+
+function togglePin(threadId) {
+  const thread = threads[threadId];
+  if (!thread) return;
+  
+  thread.pinned = !thread.pinned;
+  thread.updated = Date.now();
+  saveThreads();
+  renderThreadList();
+}
+
+function deleteThread(threadId) {
+  const thread = threads[threadId];
+  if (!thread) return;
+  
+  if (!confirm(`Delete "${thread.title || 'New conversation'}"?`)) return;
+  
+  delete threads[threadId];
+  
+  if (threadId === currentThreadId) {
+    const remainingThreads = Object.values(threads).sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return b.updated - a.updated;
+    });
+    if (remainingThreads.length) {
+      currentThreadId = remainingThreads[0].id;
+    } else {
+      const newThread = makeThread();
+      threads[newThread.id] = newThread;
+      currentThreadId = newThread.id;
+    }
+    saveCurrentThreadId();
+    renderMessages();
+  }
+  
+  saveThreads();
+  renderThreadList();
+}
+
+function createNewThread(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  
+  const thread = makeThread();
+  threads[thread.id] = thread;
+  currentThreadId = thread.id;
+  saveCurrentThreadId();
+  saveThreads();
+  
+  input.value = '';
+  input.style.height = 'auto';
+  renderMessages();
+  renderThreadList();
+  closeSidebar();
+  input.focus();
+  return false;
+}
+
+function switchThread(threadId, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  
+  if (!threads[threadId]) return false;
+  
+  if (threadId === currentThreadId) {
+    closeSidebar();
+    input.focus();
+    return false;
+  }
+  
+  currentThreadId = threadId;
+  saveCurrentThreadId();
+  renderMessages();
+  renderThreadList();
+  closeSidebar();
+  input.focus();
+  return false;
+}
+
+// Auto-resize textarea
+input.addEventListener('input', () => {
+  input.style.height = 'auto';
+  input.style.height = input.scrollHeight + 'px';
+});
+
+// Send on Enter (Shift+Enter for new line)
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+// Send button click
+sendBtn.addEventListener('click', sendMessage);
+
+threadSearch.addEventListener('input', renderThreadList);
+threadSearch.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    performFullSearch();
+  }
+});
+
+function renderMessageMarkup(content) {
+  const markedUp = escapeHtml(content)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>');
+  return markedUp
+    .split(/\n{2,}/)
+    .map(paragraph => paragraph.trim())
+    .filter(Boolean)
+    .map(paragraph => '<p>' + paragraph.replace(/\n/g, '<br>') + '</p>')
+    .join('');
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function displayMessage(role, content, messageIndex = null) {
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+  if (Number.isInteger(messageIndex)) {
+    div.dataset.messageIndex = String(messageIndex);
+  }
+  div.innerHTML = renderMessageMarkup(content);
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function scrollToMessage(messageIndex) {
+  const target = messagesDiv.querySelector(`[data-message-index="${messageIndex}"]`);
+  if (!target) return;
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  target.style.outline = '3px solid var(--primary)';
+  target.style.outlineOffset = '3px';
+  setTimeout(() => {
+    target.style.outline = '';
+    target.style.outlineOffset = '';
+  }, 1800);
+}
+
+function showTyping() {
+  const typing = document.createElement('div');
+  typing.className = 'typing-indicator active';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  messagesDiv.appendChild(typing);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  return typing;
+}
+
+async function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+  const systemPrompt = getCompanionSystemPrompt();
+  if (!systemPrompt) {
+    showCompanionPromptEditor();
+    return;
+  }
+  
+  input.disabled = true;
+  sendBtn.disabled = true;
+  const thread = getCurrentThread();
+  
+  displayMessage('user', text);
+  thread.messages.push({ role: 'user', content: text });
+  thread.updated = Date.now();
+  updateThreadTitle(thread);
+  saveThreads();
+  renderThreadList();
+  
+  input.value = '';
+  input.style.height = 'auto';
+  
+  const typing = showTyping();
+  
+  try {
+  const contextWindowSize = getContextWindowSize();
+  const liveMessages = contextWindowSize === 0 ? thread.messages : thread.messages.slice(-contextWindowSize);
+  const apiMessages = [
+    { role: 'system', content: `${systemPrompt}\n\n${getLocalTimeContext()}` },
+    ...liveMessages
+  ];
+    
+    const response = await fetch('/.netlify/functions/openai-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: apiMessages,
+        reasoningEffort: getReasoningEffort(),
+        verbosity: getTextVerbosity()
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const assistantMessage = data.message || data.choices?.[0]?.message?.content;
+    if (!assistantMessage) throw new Error('API returned no assistant message');
+    
+    typing.remove();
+    
+    displayMessage('assistant', assistantMessage);
+    thread.messages.push({ role: 'assistant', content: assistantMessage });
+    thread.updated = Date.now();
+    
+    saveThreads();
+    renderThreadList();
+    
+  } catch (error) {
+    typing.remove();
+    console.error('Error:', error);
+    displayMessage('assistant', 'Sorry, something went wrong. Check the console for details.');
+  } finally {
+    input.disabled = false;
+    sendBtn.disabled = false;
+    input.focus();
+  }
+}
+
+async function bootPortal() {
+  const securityChecklist = JSON.parse(localStorage.getItem('ellivien-security-sync-checklist-v1') || '{}');
+  if (['password-gate', 'wrong-password', 'cloud-sync', 'restore-test', 'backup'].every(key => securityChecklist[key])) {
+    document.querySelector('[onclick="showStorageSecurityInfo()"]')?.remove();
+  }
+  await loadThreads();
+  renderMessages();
+  renderThreadList();
+  input.focus();
+}
+
+bootPortal().catch(error => {
+  console.error('Portal boot failed:', error);
+  threads = {};
+  const fallbackThread = makeThread();
+  threads[fallbackThread.id] = fallbackThread;
+  currentThreadId = fallbackThread.id;
+  renderMessages();
+  renderThreadList();
+});
+
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .catch(error => console.warn('Service worker registration failed:', error));
+  });
+}
+</script>
+
+<script data-ellivien-accessibility>
+(function () {
+  'use strict';
+
+  const FONT_KEY = 'ellivien-reading-font';
+  const LANGUAGE_KEY = 'ellivien-ui-language';
+
+  const languages = [
+    ['en', 'English'], ['es', 'Español'], ['fr', 'Français'], ['pt', 'Português'],
+    ['de', 'Deutsch'], ['it', 'Italiano'], ['pl', 'Polski'], ['ru', 'Русский'],
+    ['ja', '日本語'], ['ko', '한국어'], ['zh', '中文'], ['ar', 'العربية'], ['hi', 'हिन्दी']
+  ];
+
+  const copy = {
+    en: { displayContext:'Display & context', accessibility:'Accessibility', readingFont:'Reading font', openDyslexic:'Use OpenDyslexic', interfaceLanguage:'Interface language', localOnly:'Changes portal labels only. Your conversations are not translated.', contextWindow:'Context window', contextHelp:'Default: 10 recent messages. Use 0 to send all saved messages. Higher numbers can cost more or hit model limits.', upgrades:'Upgrades', threads:'Threads', newThread:'New thread', storageSync:'Storage & sync', searchThreads:'Search threads...', searchConversations:'Search conversations', conversationBackup:'Conversation backup', exportMarkdown:'Export chat as Markdown', restoreMarkdown:'Restore chat from Markdown', backupHelp:'Use this before upgrades or if you need to move this one chat into a fresh portal.', openMenu:'Open menu', closeMenu:'Close menu', changePalette:'Change color palette', toggleMode:'Toggle light/dark mode', messagePlaceholder:'Type your message...', messageInput:'Message input', send:'Send', choosePalette:'Choose color palette', searchResults:'Search Results', closeSearch:'Close search results' },
+    es: { displayContext:'Pantalla y contexto', accessibility:'Accesibilidad', readingFont:'Fuente de lectura', openDyslexic:'Usar OpenDyslexic', interfaceLanguage:'Idioma de la interfaz', localOnly:'Solo cambia las etiquetas del portal. Tus conversaciones no se traducen.', contextWindow:'Ventana de contexto', contextHelp:'Predeterminado: 10 mensajes recientes. Usa 0 para enviar todos los mensajes guardados. Los números altos pueden costar más o alcanzar los límites del modelo.', upgrades:'Mejoras', threads:'Conversaciones', newThread:'Nueva conversación', storageSync:'Almacenamiento y sincronización', searchThreads:'Buscar conversaciones...', searchConversations:'Buscar en conversaciones', conversationBackup:'Copia de seguridad', exportMarkdown:'Exportar chat como Markdown', restoreMarkdown:'Restaurar chat desde Markdown', backupHelp:'Úsalo antes de actualizar o para mover este chat a un portal nuevo.', openMenu:'Abrir menú', closeMenu:'Cerrar menú', changePalette:'Cambiar paleta de colores', toggleMode:'Cambiar modo claro/oscuro', messagePlaceholder:'Escribe tu mensaje...', messageInput:'Campo de mensaje', send:'Enviar', choosePalette:'Elegir paleta de colores', searchResults:'Resultados de búsqueda', closeSearch:'Cerrar resultados' },
+    fr: { displayContext:'Affichage et contexte', accessibility:'Accessibilité', readingFont:'Police de lecture', openDyslexic:'Utiliser OpenDyslexic', interfaceLanguage:'Langue de l’interface', localOnly:'Modifie uniquement les libellés du portail. Vos conversations ne sont pas traduites.', contextWindow:'Fenêtre de contexte', contextHelp:'Par défaut : 10 messages récents. Utilisez 0 pour envoyer tous les messages enregistrés. Une valeur élevée peut coûter plus cher ou atteindre les limites du modèle.', upgrades:'Améliorations', threads:'Conversations', newThread:'Nouvelle conversation', storageSync:'Stockage et synchronisation', searchThreads:'Rechercher des conversations...', searchConversations:'Rechercher dans les conversations', conversationBackup:'Sauvegarde de la conversation', exportMarkdown:'Exporter le chat en Markdown', restoreMarkdown:'Restaurer le chat depuis Markdown', backupHelp:'À utiliser avant une mise à niveau ou pour déplacer ce chat vers un nouveau portail.', openMenu:'Ouvrir le menu', closeMenu:'Fermer le menu', changePalette:'Changer la palette de couleurs', toggleMode:'Basculer le mode clair/sombre', messagePlaceholder:'Écrivez votre message...', messageInput:'Champ de message', send:'Envoyer', choosePalette:'Choisir une palette de couleurs', searchResults:'Résultats de recherche', closeSearch:'Fermer les résultats' },
+    pt: { displayContext:'Ecrã e contexto', accessibility:'Acessibilidade', readingFont:'Fonte de leitura', openDyslexic:'Usar OpenDyslexic', interfaceLanguage:'Idioma da interface', localOnly:'Altera apenas os rótulos do portal. As suas conversas não são traduzidas.', contextWindow:'Janela de contexto', contextHelp:'Predefinição: 10 mensagens recentes. Use 0 para enviar todas as mensagens guardadas. Números altos podem custar mais ou atingir os limites do modelo.', upgrades:'Melhorias', threads:'Conversas', newThread:'Nova conversa', storageSync:'Armazenamento e sincronização', searchThreads:'Pesquisar conversas...', searchConversations:'Pesquisar nas conversas', conversationBackup:'Cópia de segurança', exportMarkdown:'Exportar conversa como Markdown', restoreMarkdown:'Restaurar conversa do Markdown', backupHelp:'Use antes de atualizar ou para mover esta conversa para um portal novo.', openMenu:'Abrir menu', closeMenu:'Fechar menu', changePalette:'Alterar paleta de cores', toggleMode:'Alternar modo claro/escuro', messagePlaceholder:'Escreva a sua mensagem...', messageInput:'Campo de mensagem', send:'Enviar', choosePalette:'Escolher paleta de cores', searchResults:'Resultados da pesquisa', closeSearch:'Fechar resultados' },
+    de: { displayContext:'Anzeige und Kontext', accessibility:'Barrierefreiheit', readingFont:'Leseschrift', openDyslexic:'OpenDyslexic verwenden', interfaceLanguage:'Sprache der Benutzeroberfläche', localOnly:'Ändert nur die Portalbeschriftungen. Deine Unterhaltungen werden nicht übersetzt.', contextWindow:'Kontextfenster', contextHelp:'Standard: 10 letzte Nachrichten. Mit 0 werden alle gespeicherten Nachrichten gesendet. Höhere Werte können mehr kosten oder Modellgrenzen erreichen.', upgrades:'Erweiterungen', threads:'Unterhaltungen', newThread:'Neue Unterhaltung', storageSync:'Speicher und Synchronisierung', searchThreads:'Unterhaltungen durchsuchen...', searchConversations:'In Unterhaltungen suchen', conversationBackup:'Unterhaltung sichern', exportMarkdown:'Chat als Markdown exportieren', restoreMarkdown:'Chat aus Markdown wiederherstellen', backupHelp:'Vor Aktualisierungen verwenden oder um diesen Chat in ein neues Portal zu übertragen.', openMenu:'Menü öffnen', closeMenu:'Menü schließen', changePalette:'Farbpalette ändern', toggleMode:'Hell-/Dunkelmodus wechseln', messagePlaceholder:'Nachricht eingeben...', messageInput:'Nachrichtenfeld', send:'Senden', choosePalette:'Farbpalette auswählen', searchResults:'Suchergebnisse', closeSearch:'Suchergebnisse schließen' },
+    it: { displayContext:'Aspetto e contesto', accessibility:'Accessibilità', readingFont:'Carattere di lettura', openDyslexic:'Usa OpenDyslexic', interfaceLanguage:'Lingua dell’interfaccia', localOnly:'Cambia solo le etichette del portale. Le conversazioni non vengono tradotte.', contextWindow:'Finestra di contesto', contextHelp:'Predefinito: 10 messaggi recenti. Usa 0 per inviare tutti i messaggi salvati. Valori elevati possono costare di più o raggiungere i limiti del modello.', upgrades:'Aggiornamenti', threads:'Conversazioni', newThread:'Nuova conversazione', storageSync:'Archiviazione e sincronizzazione', searchThreads:'Cerca conversazioni...', searchConversations:'Cerca nelle conversazioni', conversationBackup:'Backup della conversazione', exportMarkdown:'Esporta chat come Markdown', restoreMarkdown:'Ripristina chat da Markdown', backupHelp:'Usalo prima degli aggiornamenti o per spostare questa chat in un nuovo portale.', openMenu:'Apri menu', closeMenu:'Chiudi menu', changePalette:'Cambia tavolozza colori', toggleMode:'Cambia modalità chiara/scura', messagePlaceholder:'Scrivi il tuo messaggio...', messageInput:'Campo del messaggio', send:'Invia', choosePalette:'Scegli la tavolozza colori', searchResults:'Risultati della ricerca', closeSearch:'Chiudi risultati' },
+    pl: { displayContext:'Widok i kontekst', accessibility:'Ułatwienia dostępu', readingFont:'Czcionka do czytania', openDyslexic:'Użyj OpenDyslexic', interfaceLanguage:'Język interfejsu', localOnly:'Zmienia tylko etykiety portalu. Rozmowy nie są tłumaczone.', contextWindow:'Okno kontekstu', contextHelp:'Domyślnie: 10 ostatnich wiadomości. Ustaw 0, aby wysłać wszystkie zapisane wiadomości. Wyższe wartości mogą kosztować więcej lub przekroczyć limity modelu.', upgrades:'Ulepszenia', threads:'Rozmowy', newThread:'Nowa rozmowa', storageSync:'Pamięć i synchronizacja', searchThreads:'Szukaj rozmów...', searchConversations:'Przeszukaj rozmowy', conversationBackup:'Kopia zapasowa rozmowy', exportMarkdown:'Eksportuj czat jako Markdown', restoreMarkdown:'Przywróć czat z Markdown', backupHelp:'Użyj przed aktualizacją lub aby przenieść ten czat do nowego portalu.', openMenu:'Otwórz menu', closeMenu:'Zamknij menu', changePalette:'Zmień paletę kolorów', toggleMode:'Przełącz tryb jasny/ciemny', messagePlaceholder:'Wpisz wiadomość...', messageInput:'Pole wiadomości', send:'Wyślij', choosePalette:'Wybierz paletę kolorów', searchResults:'Wyniki wyszukiwania', closeSearch:'Zamknij wyniki' },
+    ru: { displayContext:'Отображение и контекст', accessibility:'Специальные возможности', readingFont:'Шрифт для чтения', openDyslexic:'Использовать OpenDyslexic', interfaceLanguage:'Язык интерфейса', localOnly:'Меняет только надписи портала. Ваши разговоры не переводятся.', contextWindow:'Окно контекста', contextHelp:'По умолчанию: 10 последних сообщений. Укажите 0, чтобы отправить все сохранённые сообщения. Большие значения могут стоить дороже или достигнуть лимитов модели.', upgrades:'Улучшения', threads:'Диалоги', newThread:'Новый диалог', storageSync:'Хранилище и синхронизация', searchThreads:'Поиск диалогов...', searchConversations:'Искать в диалогах', conversationBackup:'Резервная копия диалога', exportMarkdown:'Экспортировать чат в Markdown', restoreMarkdown:'Восстановить чат из Markdown', backupHelp:'Используйте перед обновлением или чтобы перенести этот чат в новый портал.', openMenu:'Открыть меню', closeMenu:'Закрыть меню', changePalette:'Изменить цветовую палитру', toggleMode:'Переключить светлый/тёмный режим', messagePlaceholder:'Введите сообщение...', messageInput:'Поле сообщения', send:'Отправить', choosePalette:'Выберите цветовую палитру', searchResults:'Результаты поиска', closeSearch:'Закрыть результаты' },
+    ja: { displayContext:'表示とコンテキスト', accessibility:'アクセシビリティ', readingFont:'読書用フォント', openDyslexic:'OpenDyslexicを使用', interfaceLanguage:'表示言語', localOnly:'ポータルのラベルだけを変更します。会話は翻訳されません。', contextWindow:'コンテキスト範囲', contextHelp:'初期値：最近の10件。保存済みの全メッセージを送るには0を指定します。数値を増やすと費用やモデル上限に影響する場合があります。', upgrades:'アップグレード', threads:'会話', newThread:'新しい会話', storageSync:'保存と同期', searchThreads:'会話を検索...', searchConversations:'会話内を検索', conversationBackup:'会話のバックアップ', exportMarkdown:'チャットをMarkdownで書き出す', restoreMarkdown:'Markdownからチャットを復元', backupHelp:'更新前、またはこのチャットを新しいポータルへ移すときに使用します。', openMenu:'メニューを開く', closeMenu:'メニューを閉じる', changePalette:'カラーパレットを変更', toggleMode:'ライト／ダークモード切替', messagePlaceholder:'メッセージを入力...', messageInput:'メッセージ入力欄', send:'送信', choosePalette:'カラーパレットを選択', searchResults:'検索結果', closeSearch:'検索結果を閉じる' },
+    ko: { displayContext:'화면 및 컨텍스트', accessibility:'접근성', readingFont:'읽기 글꼴', openDyslexic:'OpenDyslexic 사용', interfaceLanguage:'인터페이스 언어', localOnly:'포털의 고정 문구만 변경합니다. 대화는 번역되지 않습니다.', contextWindow:'컨텍스트 범위', contextHelp:'기본값: 최근 메시지 10개. 저장된 모든 메시지를 보내려면 0을 사용하세요. 숫자가 크면 비용이 늘거나 모델 한도에 도달할 수 있습니다.', upgrades:'업그레이드', threads:'대화', newThread:'새 대화', storageSync:'저장 및 동기화', searchThreads:'대화 검색...', searchConversations:'대화 내용 검색', conversationBackup:'대화 백업', exportMarkdown:'채팅을 Markdown으로 내보내기', restoreMarkdown:'Markdown에서 채팅 복원', backupHelp:'업그레이드 전 또는 이 채팅을 새 포털로 옮길 때 사용하세요.', openMenu:'메뉴 열기', closeMenu:'메뉴 닫기', changePalette:'색상 팔레트 변경', toggleMode:'라이트/다크 모드 전환', messagePlaceholder:'메시지를 입력하세요...', messageInput:'메시지 입력', send:'보내기', choosePalette:'색상 팔레트 선택', searchResults:'검색 결과', closeSearch:'검색 결과 닫기' },
+    zh: { displayContext:'显示与上下文', accessibility:'无障碍功能', readingFont:'阅读字体', openDyslexic:'使用 OpenDyslexic', interfaceLanguage:'界面语言', localOnly:'只更改门户界面文字，不翻译对话内容。', contextWindow:'上下文窗口', contextHelp:'默认：最近10条消息。输入0可发送所有已保存的消息。数值越高，费用可能越高或达到模型限制。', upgrades:'升级', threads:'对话', newThread:'新对话', storageSync:'存储与同步', searchThreads:'搜索对话...', searchConversations:'搜索对话内容', conversationBackup:'对话备份', exportMarkdown:'将聊天导出为 Markdown', restoreMarkdown:'从 Markdown 恢复聊天', backupHelp:'请在升级前使用，或用它将此聊天移至新门户。', openMenu:'打开菜单', closeMenu:'关闭菜单', changePalette:'更改配色', toggleMode:'切换明暗模式', messagePlaceholder:'输入消息...', messageInput:'消息输入框', send:'发送', choosePalette:'选择配色', searchResults:'搜索结果', closeSearch:'关闭搜索结果' },
+    ar: { displayContext:'العرض والسياق', accessibility:'إمكانية الوصول', readingFont:'خط القراءة', openDyslexic:'استخدام OpenDyslexic', interfaceLanguage:'لغة الواجهة', localOnly:'يغيّر تسميات البوابة فقط. لن تُترجم محادثاتك.', contextWindow:'نافذة السياق', contextHelp:'الافتراضي: آخر 10 رسائل. استخدم 0 لإرسال جميع الرسائل المحفوظة. قد تزيد الأرقام الكبيرة التكلفة أو تبلغ حدود النموذج.', upgrades:'الترقيات', threads:'المحادثات', newThread:'محادثة جديدة', storageSync:'التخزين والمزامنة', searchThreads:'البحث في المحادثات...', searchConversations:'البحث داخل المحادثات', conversationBackup:'نسخة احتياطية للمحادثة', exportMarkdown:'تصدير المحادثة بصيغة Markdown', restoreMarkdown:'استعادة المحادثة من Markdown', backupHelp:'استخدم هذا قبل الترقية أو لنقل هذه المحادثة إلى بوابة جديدة.', openMenu:'فتح القائمة', closeMenu:'إغلاق القائمة', changePalette:'تغيير لوحة الألوان', toggleMode:'التبديل بين الوضع الفاتح والداكن', messagePlaceholder:'اكتب رسالتك...', messageInput:'حقل الرسالة', send:'إرسال', choosePalette:'اختيار لوحة الألوان', searchResults:'نتائج البحث', closeSearch:'إغلاق النتائج' },
+    hi: { displayContext:'डिस्प्ले और कॉन्टेक्स्ट', accessibility:'सुगम्यता', readingFont:'पढ़ने का फ़ॉन्ट', openDyslexic:'OpenDyslexic का उपयोग करें', interfaceLanguage:'इंटरफ़ेस भाषा', localOnly:'यह केवल पोर्टल के लेबल बदलता है। आपकी बातचीत का अनुवाद नहीं होता।', contextWindow:'कॉन्टेक्स्ट विंडो', contextHelp:'डिफ़ॉल्ट: हाल के 10 संदेश। सभी सहेजे गए संदेश भेजने के लिए 0 चुनें। बड़ी संख्या की लागत अधिक हो सकती है या मॉडल की सीमा तक पहुँच सकती है।', upgrades:'अपग्रेड', threads:'बातचीत', newThread:'नई बातचीत', storageSync:'स्टोरेज और सिंक', searchThreads:'बातचीत खोजें...', searchConversations:'बातचीत में खोजें', conversationBackup:'बातचीत का बैकअप', exportMarkdown:'चैट को Markdown में एक्सपोर्ट करें', restoreMarkdown:'Markdown से चैट बहाल करें', backupHelp:'अपग्रेड से पहले या इस चैट को नए पोर्टल में ले जाने के लिए इसका उपयोग करें।', openMenu:'मेनू खोलें', closeMenu:'मेनू बंद करें', changePalette:'रंग पैलेट बदलें', toggleMode:'लाइट/डार्क मोड बदलें', messagePlaceholder:'अपना संदेश लिखें...', messageInput:'संदेश इनपुट', send:'भेजें', choosePalette:'रंग पैलेट चुनें', searchResults:'खोज परिणाम', closeSearch:'खोज परिणाम बंद करें' }
+  };
+
+  function savedLanguage() {
+    const value = localStorage.getItem(LANGUAGE_KEY) || 'en';
+    return copy[value] ? value : 'en';
+  }
+
+  function setText(selector, key) {
+    const element = document.querySelector(selector);
+    if (element) element.textContent = copy[savedLanguage()][key] || copy.en[key];
+  }
+
+  function setAttribute(selector, attribute, key) {
+    const element = document.querySelector(selector);
+    if (element) element.setAttribute(attribute, copy[savedLanguage()][key] || copy.en[key]);
+  }
+
+  function applyLanguage() {
+    const language = savedLanguage();
+    document.documentElement.lang = language;
+    document.documentElement.dataset.uiLanguage = language;
+
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+      const key = element.dataset.i18n;
+      element.textContent = copy[language][key] || copy.en[key] || element.textContent;
+    });
+
+    setText('#sidebar-header h3', document.querySelector('#thread-section') ? 'threads' : 'upgrades');
+    setText('.sidebar-action-btn[onclick*="createNewThread"]', 'newThread');
+    setText('.sidebar-action-btn[onclick*="showStorageSyncModal"]', 'storageSync');
+    setText('.sidebar-action-btn[onclick*="performFullSearch"]', 'searchConversations');
+    setText('#send-btn', 'send');
+    setText('#theme-modal h3', 'choosePalette');
+    setText('#search-modal .search-modal-header h3', 'searchResults');
+    setText('.context-window-setting > p:first-child', 'contextWindow');
+    setText('.context-window-setting > p:last-child', 'contextHelp');
+    setText('.conversation-tools > p:first-child', 'conversationBackup');
+    setText('#export-md-btn', 'exportMarkdown');
+    setText('#import-md-btn', 'restoreMarkdown');
+    setText('.conversation-tools > p:last-child', 'backupHelp');
+
+    setAttribute('#hamburger', 'aria-label', 'openMenu');
+    setAttribute('#sidebar-close', 'aria-label', 'closeMenu');
+    setAttribute('#theme-btn', 'title', 'changePalette');
+    setAttribute('#theme-btn', 'aria-label', 'changePalette');
+    setAttribute('#mode-btn', 'title', 'toggleMode');
+    setAttribute('#mode-btn', 'aria-label', 'toggleMode');
+    setAttribute('#input', 'placeholder', 'messagePlaceholder');
+    setAttribute('#input', 'aria-label', 'messageInput');
+    setAttribute('#send-btn', 'aria-label', 'send');
+    setAttribute('#thread-search', 'placeholder', 'searchThreads');
+    setAttribute('#thread-search', 'aria-label', 'searchThreads');
+    setAttribute('#search-modal .search-close-btn', 'aria-label', 'closeSearch');
+  }
+
+  function init() {
+    const fontToggle = document.getElementById('opendyslexic-toggle');
+    const languageSelect = document.getElementById('interface-language-select');
+    const useOpenDyslexic = localStorage.getItem(FONT_KEY) === 'opendyslexic';
+
+    document.documentElement.dataset.readingFont = useOpenDyslexic ? 'opendyslexic' : 'default';
+    if (fontToggle) {
+      fontToggle.checked = useOpenDyslexic;
+      fontToggle.addEventListener('change', () => {
+        const value = fontToggle.checked ? 'opendyslexic' : 'default';
+        localStorage.setItem(FONT_KEY, value);
+        document.documentElement.dataset.readingFont = value;
+      });
+    }
+
+    if (languageSelect) {
+      languages.forEach(([value, label]) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        languageSelect.appendChild(option);
+      });
+      languageSelect.value = savedLanguage();
+      languageSelect.addEventListener('change', () => {
+        localStorage.setItem(LANGUAGE_KEY, languageSelect.value);
+        applyLanguage();
+      });
+    }
+
+    applyLanguage();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+
+</body>
+</html>
