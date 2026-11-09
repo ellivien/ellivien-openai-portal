@@ -2,6 +2,7 @@ const { createHash } = require('node:crypto');
 const { mkdirSync, readFileSync, rmSync, writeFileSync } = require('node:fs');
 const { basename, join, resolve } = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { assertManifestAssetsIncluded, included } = require('./release-files.cjs');
 
 const ROOT = resolve(__dirname, '..');
 const packageJson = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
@@ -18,31 +19,11 @@ const releaseDirectory = join(ROOT, 'release');
 const archiveName = `ellivien-openai-portal-${tag}.zip`;
 const archivePath = join(releaseDirectory, archiveName);
 const checksumPath = `${archivePath}.sha256`;
-const included = [
-  '.env.example',
-  'CONTRIBUTING.md',
-  'INSTALL-WITH-AI.md',
-  'LICENSE',
-  'NOTICE',
-  'Password + KV Sync - Activate Later',
-  'README.md',
-  'README.txt',
-  'RELEASE-ACCEPTANCE.md',
-  'SECURITY & SYNC - READ THIS NEXT.txt',
-  'SECURITY.md',
-  'assets',
-  'index.html',
-  'manifest.webmanifest',
-  'netlify',
-  'netlify.toml',
-  'package.json',
-  'service-worker.js',
-  'verify-portal.test.mjs',
-];
-
 mkdirSync(releaseDirectory, { recursive: true });
 rmSync(archivePath, { force: true });
 rmSync(checksumPath, { force: true });
+
+assertManifestAssetsIncluded(ROOT);
 
 const zip = spawnSync('zip', ['-q', '-r', archivePath, ...included, '-x', '*.DS_Store', '*/.DS_Store'], {
   cwd: ROOT,
