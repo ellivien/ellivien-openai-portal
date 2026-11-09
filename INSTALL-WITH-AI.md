@@ -31,6 +31,10 @@ Known presets are implemented in both copies of
 - `gpt-5.6-sol`
 - `gpt-5.5`
 - `gpt-5.5-2026-04-23`
+- `gpt-5.1`
+- `gpt-5.1-2025-11-13`
+- `gpt-4.1`
+- `gpt-4.1-2025-04-14`
 - `gpt-4o`
 - `gpt-4o-2024-11-20`
 - `gpt-4o-2024-08-06`

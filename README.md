@@ -7,9 +7,10 @@ stores conversations locally in IndexedDB, supports searchable conversation
 threads, exports and restores conversations, and lets the owner edit the
 companion prompt inside the portal.
 
-The same maintained codebase can use GPT-5.6 Sol, GPT-5.5, GPT-4o or another
-compatible OpenAI Responses API model. Model choice belongs in deployment
-configuration, not in a separate copy of the entire portal.
+The same maintained codebase has explicit configurations for GPT-5.6 Sol,
+GPT-5.5, GPT-5.1, GPT-4.1 and GPT-4o, and can also use another compatible
+OpenAI Responses API model. Model choice belongs in deployment configuration,
+not in a separate copy of the entire portal.
 
 ## Start here
 
@@ -32,6 +33,10 @@ browser-visible file.
 | GPT-5.6 Sol | `gpt-5.6-sol` | Default. Reasoning and verbosity controls are active. |
 | GPT-5.5 | `gpt-5.5` | Reasoning and verbosity controls are active. |
 | Fixed GPT-5.5 snapshot | `gpt-5.5-2026-04-23` | Use when the fixed snapshot is important to the companion. |
+| GPT-5.1 | `gpt-5.1` | Supports `none`, `low`, `medium` and `high` reasoning plus verbosity. API shutdown: 1 April 2027. |
+| Fixed GPT-5.1 snapshot | `gpt-5.1-2025-11-13` | Fixed-snapshot route; the same shutdown date applies. |
+| GPT-4.1 | `gpt-4.1` | Non-reasoning route; unsupported reasoning and verbosity fields are omitted. API shutdown: 14 January 2027. |
+| Fixed GPT-4.1 snapshot | `gpt-4.1-2025-04-14` | Fixed-snapshot route; the same shutdown date applies. |
 | GPT-4o | `gpt-4o-2024-11-20` | Compatibility route. OpenAI has announced API shutdown on 14 January 2027. |
 | Another compatible model | its documented model ID | Uses a conservative Responses API request unless capabilities are enabled explicitly. |
 
@@ -47,6 +52,9 @@ For a compatible model not listed above, optional server settings are:
 - `OPENAI_PROMPT_CACHE_KEY=your-stable-cache-key`
 
 Only enable parameters that the current official model documentation supports.
+See OpenAI's official [GPT-4.1 model page](https://developers.openai.com/api/docs/models/gpt-4.1),
+[GPT-5.1 model page](https://developers.openai.com/api/docs/models/gpt-5.1)
+and [deprecation schedule](https://developers.openai.com/api/docs/deprecations).
 
 ## What is included
 

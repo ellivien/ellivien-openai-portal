@@ -1,6 +1,6 @@
 {
   "name": "ellivien-openai-portal-secure",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Password and KV activation package for the Ellivien OpenAI Companion Portal",
   "license": "Apache-2.0",
   "engines": {

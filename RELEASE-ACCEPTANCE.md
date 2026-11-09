@@ -9,7 +9,7 @@ Before publishing a version tag:
 - [ ] No real API key, prompt, conversation, personal path or deployment identifier is present.
 - [ ] Both `[YOUR COMPANION NAME]` placeholders remain in each portal interface.
 - [ ] A fresh basic deployment works with only `OPENAI_API_KEY` configured.
-- [ ] GPT-5.6 Sol, GPT-5.5 and GPT-4o request shapes have been checked by tests.
+- [ ] GPT-5.6 Sol, GPT-5.5, GPT-5.1, GPT-4.1 and GPT-4o request shapes have been checked by tests.
 - [ ] The Password + KV route rejects an unauthenticated OpenAI request.
 - [ ] The release notes call out any model retirement or migration requirement.
 

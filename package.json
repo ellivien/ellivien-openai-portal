@@ -1,6 +1,6 @@
 {
   "name": "ellivien-openai-portal",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A configurable threaded companion portal for the native OpenAI Responses API",
   "license": "Apache-2.0",
   "scripts": {

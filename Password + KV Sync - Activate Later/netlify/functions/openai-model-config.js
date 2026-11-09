@@ -19,6 +19,22 @@ const MODEL_PRESETS = {
     reasoningEfforts: ['low', 'medium', 'high', 'xhigh'],
     verbosity: true,
   },
+  'gpt-5.1': {
+    reasoningEfforts: ['none', 'low', 'medium', 'high'],
+    verbosity: true,
+  },
+  'gpt-5.1-2025-11-13': {
+    reasoningEfforts: ['none', 'low', 'medium', 'high'],
+    verbosity: true,
+  },
+  'gpt-4.1': {
+    reasoningEfforts: [],
+    verbosity: false,
+  },
+  'gpt-4.1-2025-04-14': {
+    reasoningEfforts: [],
+    verbosity: false,
+  },
   'gpt-4o': {
     reasoningEfforts: [],
     verbosity: false,

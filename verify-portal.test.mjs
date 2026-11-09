@@ -111,6 +111,24 @@ test('model selection remains server-side and applies known capability presets',
   assert.deepEqual(gpt55.reasoning, { effort: 'medium' });
   assert.deepEqual(gpt55.text, { verbosity: 'high' });
 
+  const gpt51 = modelConfig.buildResponseRequest({
+    messages: [],
+    reasoningEffort: 'none',
+    verbosity: 'low'
+  }, { OPENAI_MODEL: 'gpt-5.1' });
+  assert.equal(gpt51.model, 'gpt-5.1');
+  assert.deepEqual(gpt51.reasoning, { effort: 'none' });
+  assert.deepEqual(gpt51.text, { verbosity: 'low' });
+
+  const gpt41 = modelConfig.buildResponseRequest({
+    messages: [],
+    reasoningEffort: 'high',
+    verbosity: 'high'
+  }, { OPENAI_MODEL: 'gpt-4.1' });
+  assert.equal(gpt41.model, 'gpt-4.1');
+  assert.equal(gpt41.reasoning, undefined);
+  assert.equal(gpt41.text, undefined);
+
   const gpt4o = modelConfig.buildResponseRequest({
     messages: [],
     reasoningEffort: 'high',
@@ -119,6 +137,12 @@ test('model selection remains server-side and applies known capability presets',
   assert.equal(gpt4o.model, 'gpt-4o-2024-11-20');
   assert.equal(gpt4o.reasoning, undefined);
   assert.equal(gpt4o.text, undefined);
+});
+
+test('all five documented OpenAI routes have explicit capability presets', () => {
+  for (const model of ['gpt-4o', 'gpt-4.1', 'gpt-5.1', 'gpt-5.5', 'gpt-5.6-sol']) {
+    assert.equal(Object.hasOwn(modelConfig.MODEL_PRESETS, model), true, `${model} preset missing`);
+  }
 });
 
 test('unknown compatible model IDs use conservative defaults with explicit capability overrides', () => {

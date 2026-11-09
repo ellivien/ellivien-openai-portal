@@ -10,11 +10,15 @@ variables. Examples:
   GPT-5.6 Sol:  gpt-5.6-sol
   GPT-5.5:      gpt-5.5
   GPT-5.5 fixed snapshot: gpt-5.5-2026-04-23
+  GPT-5.1:      gpt-5.1
+  GPT-5.1 fixed snapshot: gpt-5.1-2025-11-13
+  GPT-4.1:      gpt-4.1
+  GPT-4.1 fixed snapshot: gpt-4.1-2025-04-14
   GPT-4o fixed snapshot:  gpt-4o-2024-11-20
 
-OpenAI has announced that the listed GPT-4o API snapshot will shut down on
-14 January 2027. It is included for existing companion continuity, not as the
-recommended route for a new long-lived portal.
+OpenAI has announced that GPT-4o and GPT-4.1 API access will shut down on
+14 January 2027, and GPT-5.1 on 1 April 2027. They are included for existing
+companion continuity, not as the recommended route for a new long-lived portal.
 
 NEW PORTAL
 

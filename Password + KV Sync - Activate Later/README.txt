@@ -87,7 +87,9 @@ Files:
   Auth-protected OpenAI Responses proxy. It reads OPENAI_MODEL from Netlify, applies only the supported model controls and sets store to false. Use this included copy so activating password/KV does not remove authentication or change the companion's model.
 
 - netlify/functions/openai-model-config.js
-  Server-side model presets and conservative handling for another compatible OpenAI model ID. Keep this copy identical to the ordinary portal version.
+  Server-side presets for GPT-4o, GPT-4.1, GPT-5.1, GPT-5.5 and GPT-5.6 Sol,
+  plus conservative handling for another compatible OpenAI model ID. Keep this
+  copy identical to the ordinary portal version.
 
 - hash-password.mjs
 - package.json
