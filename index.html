@@ -691,15 +691,15 @@ body {
   #sidebar {
     width: min(85%, 320px);
   }
-  
+
   #messages {
     padding: 15px;
   }
-  
+
   .message {
     max-width: 90%;
   }
-  
+
   #input-container {
     padding: 10px;
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
@@ -1018,7 +1018,7 @@ html[data-reading-font="opendyslexic"] select {
       <h3>Threads</h3>
       <button id="sidebar-close" type="button" onclick="closeSidebar(event)" ontouchend="closeSidebar(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();closeSidebar(event)}">✕</button>
     </div>
-    
+
     <div id="thread-section">
       <button class="sidebar-action-btn" type="button" onclick="createNewThread(event)" ontouchend="createNewThread(event)">New thread</button>
       <button class="sidebar-action-btn secondary" type="button" onclick="showStorageSecurityInfo()">Storage &amp; security</button>
@@ -1099,12 +1099,12 @@ html[data-reading-font="opendyslexic"] select {
       <p class="accessibility-note" data-i18n="localOnly">Changes portal labels only. Your conversations are not translated.</p>
     </section>
     </details>
-    
+
     <div id="sidebar-footer">
       © Ellivien ✨ 2026
     </div>
   </div>
-  
+
   <!-- Main chat -->
   <div id="main">
     <div id="header">
@@ -1117,9 +1117,9 @@ html[data-reading-font="opendyslexic"] select {
         <button class="icon-btn" id="mode-btn" type="button" title="Toggle light/dark mode" aria-label="Toggle light/dark mode" onclick="toggleMode(); return false;" ontouchend="event.preventDefault(); toggleMode(); return false;" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMode()}">☀️</button>
       </div>
     </div>
-    
+
     <div id="messages"></div>
-    
+
     <div id="input-container">
       <textarea id="input" placeholder="Type your message..." rows="1" aria-label="Message input"></textarea>
       <button id="send-btn" type="button" aria-label="Send message">Send</button>
@@ -1522,7 +1522,7 @@ let currentMode = localStorage.getItem('theme-mode') || 'light';
 function applyTheme(palette, mode) {
   const theme = THEMES[palette][mode];
   const root = document.documentElement;
-  
+
   root.style.setProperty('--primary', theme.primary);
   root.style.setProperty('--primary-hover', theme.primaryHover);
   root.style.setProperty('--secondary', theme.secondary);
@@ -1533,9 +1533,9 @@ function applyTheme(palette, mode) {
   root.style.setProperty('--text-main', theme.textMain);
   root.style.setProperty('--text-dim', theme.textDim);
   root.style.setProperty('--border', theme.border);
-  
+
   document.getElementById('mode-btn').textContent = mode === 'light' ? '☀️' : '🌙';
-  
+
   currentTheme = palette;
   currentMode = mode;
   localStorage.setItem('theme-palette', palette);
@@ -1550,13 +1550,13 @@ function toggleMode() {
 function showThemePicker() {
   const modal = document.getElementById('theme-modal');
   const optionsContainer = document.getElementById('theme-options');
-  
+
   optionsContainer.innerHTML = '';
-  
+
   Object.keys(THEMES).forEach(key => {
     const option = document.createElement('div');
     option.className = 'theme-option' + (key === currentTheme ? ' selected' : '');
-    
+
     const preview = document.createElement('div');
     preview.className = 'theme-preview';
     preview.innerHTML = `
@@ -1564,13 +1564,13 @@ function showThemePicker() {
       <span style="background:${THEMES[key][currentMode].secondary}"></span>
       <span style="background:${THEMES[key][currentMode].bgAssistant}"></span>
     `;
-    
+
     const name = document.createElement('span');
     name.textContent = THEMES[key].name;
-    
+
     option.appendChild(preview);
     option.appendChild(name);
-    
+
     option.onclick = () => {
       applyTheme(key, currentMode);
       modal.classList.remove('active');
@@ -1581,10 +1581,10 @@ function showThemePicker() {
       applyTheme(key, currentMode);
       modal.classList.remove('active');
     }, { passive: false });
-    
+
     optionsContainer.appendChild(option);
   });
-  
+
   modal.classList.add('active');
 }
 
@@ -1822,14 +1822,14 @@ async function loadThreads() {
       threads = {};
     }
   }
-  
+
   try {
     currentThreadId = await getPortalState(CURRENT_THREAD_KEY);
   } catch (error) {
     console.warn('Could not load current thread id from IndexedDB:', error);
     currentThreadId = localStorage.getItem(CURRENT_THREAD_KEY);
   }
-  
+
   const hasThreads = Object.keys(threads).length > 0;
   let legacyMessages = [];
 
@@ -1851,7 +1851,7 @@ async function loadThreads() {
   } catch (error) {
     console.warn('Could not load old single conversation:', error);
   }
-  
+
   if (!hasThreads && legacyMessages.length) {
     const migrated = makeThread('Imported conversation', legacyMessages);
     threads[migrated.id] = migrated;
@@ -1860,7 +1860,7 @@ async function loadThreads() {
     saveCurrentThreadId();
     return;
   }
-  
+
   if (!hasThreads) {
     const firstThread = makeThread();
     threads[firstThread.id] = firstThread;
@@ -1869,7 +1869,7 @@ async function loadThreads() {
     saveCurrentThreadId();
     return;
   }
-  
+
   if (!currentThreadId || !threads[currentThreadId]) {
     currentThreadId = Object.keys(threads).sort((a, b) => {
       return threads[b].updated - threads[a].updated;
@@ -1916,7 +1916,7 @@ function escapeRegExp(value) {
 function highlightSearchTerm(text, query) {
   const value = String(text || '');
   if (!query) return escapeHtml(value);
-  
+
   const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
   return value.split(regex).map(part => {
     if (part.toLowerCase() === query.toLowerCase()) {
@@ -1932,17 +1932,17 @@ function getSearchPreview(thread, query) {
     const lastMessage = getLastVisibleMessage(thread);
     return lastMessage ? cleanPreview(lastMessage.content) : 'No messages yet';
   }
-  
+
   const lowerQuery = query.toLowerCase();
   const matchedMessage = messages.find(msg => {
     return msg.content && msg.content.toLowerCase().includes(lowerQuery);
   });
-  
+
   if (!matchedMessage) {
     const lastMessage = getLastVisibleMessage(thread);
     return lastMessage ? cleanPreview(lastMessage.content) : 'No messages yet';
   }
-  
+
   const compact = String(matchedMessage.content || '').replace(/\s+/g, ' ').trim();
   const matchIndex = compact.toLowerCase().indexOf(lowerQuery);
   const start = Math.max(0, matchIndex - 36);
@@ -1955,7 +1955,7 @@ function getSearchPreview(thread, query) {
 function updateThreadTitle(thread) {
   const firstUserMessage = getFirstUserMessage(thread);
   if (!firstUserMessage) return;
-  
+
   if (!thread.title || thread.title === 'New conversation' || thread.title === 'Imported conversation') {
     thread.title = cleanPreview(firstUserMessage.content, 42);
   }
@@ -2197,9 +2197,9 @@ function renderThreadList() {
     ].join(' ').toLowerCase();
     return !query || searchable.includes(query);
   });
-  
+
   threadList.innerHTML = '';
-  
+
   if (!matchingThreads.length) {
     const empty = document.createElement('div');
     empty.className = 'empty-thread-list';
@@ -2207,10 +2207,10 @@ function renderThreadList() {
     threadList.appendChild(empty);
     return;
   }
-  
+
   matchingThreads.forEach(thread => {
     updateThreadTitle(thread);
-    
+
     const titleText = thread.pinned ? `Pinned: ${thread.title || 'New conversation'}` : thread.title || 'New conversation';
     const dateText = formatThreadDate(thread.updated);
     const previewText = getSearchPreview(thread, query);
@@ -2222,13 +2222,13 @@ function renderThreadList() {
       thread.pinned ? 'pinned' : ''
     ].filter(Boolean).join(' ');
     button.onclick = (event) => showThreadModal(thread.id, event);
-    
+
     button.innerHTML = `
       <div class="thread-title">${highlightSearchTerm(titleText, query)}</div>
       <div class="thread-meta">${highlightSearchTerm(dateText, query)}</div>
       <div class="thread-preview">${highlightSearchTerm(previewText, query)}</div>
     `;
-    
+
     threadList.appendChild(button);
   });
 }
@@ -2363,25 +2363,25 @@ function showThreadModal(threadId, event) {
     event.preventDefault();
     event.stopPropagation();
   }
-  
+
   const thread = threads[threadId];
   if (!thread) return false;
-  
+
   const existingModal = document.getElementById('thread-modal');
   if (existingModal) existingModal.remove();
-  
+
   const overlay = document.createElement('div');
   overlay.id = 'thread-modal';
   overlay.className = 'modal-overlay active';
-  
+
   const modal = document.createElement('div');
   modal.className = 'modal';
-  
+
   const title = document.createElement('div');
   title.className = 'thread-action-title';
   title.textContent = thread.title || 'New conversation';
   modal.appendChild(title);
-  
+
   const actions = [
     { text: 'Open Thread', action: () => { overlay.remove(); switchThread(threadId); } },
     { text: 'Rename', action: () => { overlay.remove(); renameThread(threadId); } },
@@ -2392,7 +2392,7 @@ function showThreadModal(threadId, event) {
     { text: 'Delete', danger: true, action: () => { overlay.remove(); deleteThread(threadId); } },
     { text: 'Cancel', action: () => overlay.remove() }
   ];
-  
+
   actions.forEach(action => {
     const button = document.createElement('button');
     button.type = 'button';
@@ -2401,24 +2401,24 @@ function showThreadModal(threadId, event) {
     button.onclick = action.action;
     modal.appendChild(button);
   });
-  
+
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
-  
+
   overlay.onclick = (clickEvent) => {
     if (clickEvent.target === overlay) overlay.remove();
   };
-  
+
   return false;
 }
 
 function renameThread(threadId) {
   const thread = threads[threadId];
   if (!thread) return;
-  
+
   const newName = prompt('Rename thread:', thread.title || 'New conversation');
   if (!newName || !newName.trim()) return;
-  
+
   thread.title = newName.trim();
   thread.updated = Date.now();
   saveThreads();
@@ -2428,7 +2428,7 @@ function renameThread(threadId) {
 function togglePin(threadId) {
   const thread = threads[threadId];
   if (!thread) return;
-  
+
   thread.pinned = !thread.pinned;
   thread.updated = Date.now();
   saveThreads();
@@ -2438,11 +2438,11 @@ function togglePin(threadId) {
 function deleteThread(threadId) {
   const thread = threads[threadId];
   if (!thread) return;
-  
+
   if (!confirm(`Delete "${thread.title || 'New conversation'}"?`)) return;
-  
+
   delete threads[threadId];
-  
+
   if (threadId === currentThreadId) {
     const remainingThreads = Object.values(threads).sort((a, b) => {
       if (a.pinned && !b.pinned) return -1;
@@ -2459,7 +2459,7 @@ function deleteThread(threadId) {
     saveCurrentThreadId();
     renderMessages();
   }
-  
+
   saveThreads();
   renderThreadList();
 }
@@ -2469,13 +2469,13 @@ function createNewThread(event) {
     event.preventDefault();
     event.stopPropagation();
   }
-  
+
   const thread = makeThread();
   threads[thread.id] = thread;
   currentThreadId = thread.id;
   saveCurrentThreadId();
   saveThreads();
-  
+
   input.value = '';
   input.style.height = 'auto';
   renderMessages();
@@ -2490,15 +2490,15 @@ function switchThread(threadId, event) {
     event.preventDefault();
     event.stopPropagation();
   }
-  
+
   if (!threads[threadId]) return false;
-  
+
   if (threadId === currentThreadId) {
     closeSidebar();
     input.focus();
     return false;
   }
-  
+
   currentThreadId = threadId;
   saveCurrentThreadId();
   renderMessages();
@@ -2594,23 +2594,23 @@ async function sendMessage() {
     showCompanionPromptEditor();
     return;
   }
-  
+
   input.disabled = true;
   sendBtn.disabled = true;
   const thread = getCurrentThread();
-  
+
   displayMessage('user', text);
   thread.messages.push({ role: 'user', content: text });
   thread.updated = Date.now();
   updateThreadTitle(thread);
   saveThreads();
   renderThreadList();
-  
+
   input.value = '';
   input.style.height = 'auto';
-  
+
   const typing = showTyping();
-  
+
   try {
   const contextWindowSize = getContextWindowSize();
   const liveMessages = contextWindowSize === 0 ? thread.messages : thread.messages.slice(-contextWindowSize);
@@ -2618,7 +2618,7 @@ async function sendMessage() {
     { role: 'system', content: `${systemPrompt}\n\n${getLocalTimeContext()}` },
     ...liveMessages
   ];
-    
+
     const response = await fetch('/.netlify/functions/openai-proxy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2628,24 +2628,24 @@ async function sendMessage() {
         verbosity: getTextVerbosity()
       })
     });
-    
+
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
     }
-    
+
     const data = await response.json();
     const assistantMessage = data.message || data.choices?.[0]?.message?.content;
     if (!assistantMessage) throw new Error('API returned no assistant message');
-    
+
     typing.remove();
-    
+
     displayMessage('assistant', assistantMessage);
     thread.messages.push({ role: 'assistant', content: assistantMessage });
     thread.updated = Date.now();
-    
+
     saveThreads();
     renderThreadList();
-    
+
   } catch (error) {
     typing.remove();
     console.error('Error:', error);
