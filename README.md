@@ -56,6 +56,34 @@ See OpenAI's official [GPT-4.1 model page](https://developers.openai.com/api/doc
 [GPT-5.1 model page](https://developers.openai.com/api/docs/models/gpt-5.1)
 and [deprecation schedule](https://developers.openai.com/api/docs/deprecations).
 
+## Extending GPT-4o or GPT-4.1 through Microsoft Azure
+
+OpenAI has announced direct API shutdown for GPT-4o and GPT-4.1 on
+14 January 2027. Microsoft Azure is a separate provider route which may extend
+access, but it cannot be activated merely by changing `OPENAI_MODEL` in this
+OpenAI-only starter.
+
+The tested
+[Ellivien Azure GPT-4 preservation guides](https://github.com/ellivien/ellivien-azure-gpt4-preservation)
+cover:
+
+- a Standard Azure deployment of the unchanged `gpt-4o-2024-11-20`
+  snapshot, with Microsoft's published retirement date of 14 April 2027;
+- a supervised fine-tune based on `gpt-4o-2024-08-06`; and
+- a completed custom model which was deployed twice, two weeks apart, with
+  both deployments displaying a retirement date of 13 April 2028.
+
+Microsoft also supports supervised fine-tuning of `gpt-4.1-2025-04-14`.
+Ellivien has not yet run the equivalent GPT-4.1 deployment-date test, so April
+2028 is a possibility to investigate rather than a promised GPT-4.1 date.
+Record the retirement metadata shown on your own completed model and
+deployment before relying on it.
+
+Moving an existing portal to Azure is a provider integration, not a model-name
+swap. Preserve the portal's prompt, memories, authentication, threads, storage
+and interface; keep Azure credentials server-side; and never deploy, enable
+billing or submit a fine-tuning job without explicit approval.
+
 ## What is included
 
 - multiple IndexedDB conversation threads;
